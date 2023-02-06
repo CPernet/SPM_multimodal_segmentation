@@ -4,11 +4,11 @@ This repository containst the [BIDS](https://bids.neuroimaging.io/) compliant co
 
 ## Code
 
-multispectral_segmentation_analysis.m is the analysis script.  
+`multispectral_segmentation_analysis.m` is the analysis script.  
 
-segment_images.m is a function performs the SPM12 segmentation, get tissue volume information, get voxel distributions of normalized images, compute the DARTEL template and returns the SPM batch jobs.  
+`segment_images.m` is a function performs the SPM12 segmentation, get tissue volume information, get voxel distributions of normalized images, compute the DARTEL template and returns the SPM batch jobs.  
 
-create_decile_images.m is a function to compute a decile image which can then be used to mperorm a shif function analysis.
+`create_decile_images.m` is a function to compute a decile image which can then be used to mperorm a shif function analysis.
 
 
 
