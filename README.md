@@ -4,7 +4,7 @@ This repository containst the [BIDS](https://bids.neuroimaging.io/) compliant co
 
 # Environement
 
-[Matlab}(https://se.mathworks.com/) & [SPM12 ](https://www.fil.ion.ucl.ac.uk/spm/)
+[Matlab](https://se.mathworks.com/) & [SPM12 ](https://www.fil.ion.ucl.ac.uk/spm/)
 
 ## Code
 
