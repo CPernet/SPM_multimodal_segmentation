@@ -18,9 +18,9 @@
 
 clear variales
 %% set up the directories
-root    = '/PROJ/BRAINS_multiScaleTemplates/PY146660/code'; cd(root)
-datadir = '/PROJ/BRAINS_multiScaleTemplates/PY146660/all_the_data';
-outdir  = '/PROJ/BRAINS_multiScaleTemplates/PY146660/derivatives';
+root    = pwd; cd(root)
+datadir = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/all_the_data';
+outdir  = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/derivatives';
 
 %% Image processing
 % Do the segmentation and get the tissue volumes and voxel distributions. 
