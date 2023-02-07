@@ -14,7 +14,7 @@ function decompress_gzip(datadir,options)
 %
 %   Example:
 %       decompress_gzip(datadir,options)
-
+    root = cd;
     cd(datadir);
     folders = dir; % maps the subjects' folders
     for subject = 3:length(folders)
@@ -49,5 +49,6 @@ function decompress_gzip(datadir,options)
             gunzip('*.nii.gz');
         end
     end
+    cd(root);
 end
 
