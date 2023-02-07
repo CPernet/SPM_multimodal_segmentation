@@ -19,7 +19,7 @@
 clear variales
 %% set up the directories
 root    = pwd; cd(root)
-datadir = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/all_the_data';
+datadir = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/sourcedata';
 outdir  = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/derivatives';
 
 %% Image processing
