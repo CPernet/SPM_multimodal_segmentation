@@ -33,15 +33,14 @@ function decompress_gzip(datadir,options)
             % Gunzip the file
             gunzip('*.nii.gz');
         elseif strcmpi(options.modality,'T2')
-            cd(fullfile(datadir, folders(subject).name)+'\T2');
+            cd(fullfile(datadir, folders(subject).name)+'\T2w');
             % Check that the file exists
             if exist('*.nii.gz', 'file') ~= 2
                 error('IOError: File not found');
             end
         
             % Check that the file is a gzip file
-            [~, ~, ext] = fileparts(cd);
-            if ~strcmp(ext, '*.nii.gz')
+            if isempty(dir('*.nii.gz'))
                 error('OSError: Not a gzip file');
             end
         
