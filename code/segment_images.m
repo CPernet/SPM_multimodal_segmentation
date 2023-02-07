@@ -205,9 +205,9 @@ for subject=3:(N+2)
     end
 end
 temp_name = ['volumes' options.modality '_nG' num2str(options.NGaussian)];
-save([outdir filesep temp_name],'volumes','-v7.3')
+save(outdir+filesep+temp_name,'volumes','-v7.3')
 temp_name = ['distrib' options.modality '_nG' num2str(options.NGaussian)];
-save([outdir filesep temp_name],'distrib','-v7.3')
+save(outdir+filesep+temp_name,'distrib','-v7.3')
 clear distrib volumes
 
 %% generate the DARTEL template
