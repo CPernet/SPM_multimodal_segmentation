@@ -36,10 +36,7 @@ for subject = 3:length(folders)
         % channel T1 or T1 and coregistered T2
         if strcmpi(options.modality,'T1')
             cd('newT1');
-            T1name = dir('BID*.nii');
-            if isempty(T1name)
-                T1name = dir('20*.nii');
-            end
+            T1name = dir('*_T1w.nii');
             c   = dir(['c*' T1name.name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
             rc  = dir(['rc*' T1name.name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
             wc  = dir(['wc*' T1name.name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
@@ -52,20 +49,14 @@ for subject = 3:length(folders)
             matlabbatch{1}.spm.spatial.preproc.channel(1).write = [0 0];
             batch_index = 1;
         elseif strcmpi(options.modality,'T12')
-            cd('newT1');
-            T1name = dir('BID*.nii');
-            if isempty(T1name)
-                T1name = dir('20*.nii');
-            end
+            cd('T2');
+            T1name = dir('*_T1w.nii');
             T1name = [pwd filesep T1name.name];
             [pth, T1name, ext] = fileparts(T1name);
             T1name = [T1name ext];
             
             cd(['..' filesep 'T2w']);
-            T2name = dir('BID*.nii');
-            if isempty(T2name)
-                T2name = dir('20*.nii');
-            end
+            T2name = dir('*_T2w.nii');
             N = length(T2name);
             for n=1:N
                 try
@@ -150,13 +141,15 @@ for subject = 3:length(folders)
         matlabbatch{batch_index+1}.spm.util.tvol.outf = [fileparts(T1name)];
         
         % save into a 'batch' variable
-        batch{index} = matlabbatch; index = index+1;
+        batch{index} = matlabbatch;
+        index = index+1;
         clear matlabbatch
     end
 end
 
 %% run the jobs in parallel
 %-----------------------------------------------------------------------
+disp("run the jobs in parallel")
 cd(datadir)
 N = length(batch);
 for subject=1:N
@@ -195,6 +188,7 @@ for subject=3:(N+2)
     
     try
         f = dir('*seg8.mat'); results = load(f.name);
+        disp(results);
         volumes(subject-2,:) = results.volumes.litres*1000;
         
         % get the in mask voxel distributions

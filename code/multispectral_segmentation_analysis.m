@@ -64,12 +64,12 @@ for op = 1:4
             end
         end
         data                = spm_read_vols(V);
-        M                   = nanmean(data,4);
-        S                   = nanvar(data,0,4);
+        M                   = mean(data,4);
+        S                   = var(data,0,4);
         W                   = spm_vol(V(1));
         W.fname             = fullfile(outdir,['mean_modality' options.modality '_NGaussian' num2str(options.NGaussian) '_class' num2str(class) '.nii']);
         W.descrip           = 'average image';
-        W.private.dat.fname = W.fname;
+        W.private.dat.fname = char(W.fname);
         W.private.dat.dim   = W.dim;
         W.private.descrip   = 'average image';
         W.n                 = [1 1];
