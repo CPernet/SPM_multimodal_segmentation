@@ -18,9 +18,10 @@
 
 clear variales
 %% set up the directories
-root    = pwd; cd(root)
-datadir = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/sourcedata';
-outdir  = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/derivatives';
+root    = fileparts(which('multispectral_segmentation_analysis.m')); cd(root)
+datadir = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/sourcedata/';
+outdir  = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/derivatives/';
+addpath(root); 
 
 %% Image processing
 % Do the segmentation and get the tissue volumes and voxel distributions. 
