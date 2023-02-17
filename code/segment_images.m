@@ -157,7 +157,7 @@ end
 disp("run the jobs in parallel")
 cd(datadir)
 N = length(batch);
-for subject=1:N
+parfor subject=1:N
     try
         % spm_jobman('initcfg')
         out{subject}=spm_jobman('run',batch{subject});
