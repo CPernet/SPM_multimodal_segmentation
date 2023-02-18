@@ -19,7 +19,7 @@
 clear variales
 %% set up the directories
 root    = fileparts(which('multispectral_segmentation_analysis.m')); cd(root)
-datadir = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/sourcedata/';
+datadir = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'\sourcedata\';
 outdir  = string(getfield( fliplr(regexp(fileparts(cd),'/','split')), {1} ))+'/derivatives/';
 addpath(root); 
 
