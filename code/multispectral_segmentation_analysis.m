@@ -75,7 +75,6 @@ for op = 1:4
         W.private.descrip   = 'average image';
         W.n                 = [1 1];
         W                   = rmfield(W,'pinfo'); % let SPM figure out the scale
-        beep();
         spm_write_vol(W,M);
         W.fname             = char(fullfile(outdir,['var_modality' options.modality '_NGaussian' num2str(options.NGaussian) '_class' num2str(class) '.nii']));
         W.descrip           = 'variance image';
