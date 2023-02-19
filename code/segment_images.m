@@ -20,139 +20,141 @@ function out = segment_images(datadir,outdir,options)
 %% basic info
 %-----------------------------------------------------------------------
 cd(datadir)
-folders = dir; % maps the subjects' folders
 spmroot = fileparts(which('spm'));
 spm('defaults', 'FMRI'); spm_jobman('initcfg')
+BIDS = spm_BIDS(pwd);
 
 %% create batch per subjects
 %-----------------------------------------------------------------------
 index = 1;
-for subject = 3:length(folders)
-    if folders(subject).isdir
+if strcmpi(options.modality,'T1')
+    files = spm_BIDS(BIDS,'data','type','T1w');
+    % remove compressed file if uncompressed files exist
+    files((find(endsWith(files,'.nii') == 1) + 1)) = [];
+elseif strcmpi(options.modality,'T12')
+    files = [spm_BIDS(BIDS,'data','type','T1w'); spm_BIDS(BIDS,'data','type','T2w')];
+    % remove compressed file if uncompressed files exist
+    files((find(endsWith(files,'.nii') == 1) + 1)) = [];
+end
+for fileIndex = 1:length(files)
+    [filepath,name,ext] = fileparts(files{fileIndex});
+    cd(filepath);
+    decompress_gzip();
+    % channel T1 or T1 and coregistered T2
+    if strcmpi(options.modality,'T1')
+        T1name = append(name,ext);
+        c   = dir(['c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
+        rc  = dir(['rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
+        wc  = dir(['wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
+        seg = dir('*seg8.mat'); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
+        u_rc = dir('u_rc*'); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
+        T1name = [pwd filesep T1name];
+        matlabbatch{1}.spm.spatial.preproc.channel(1).vols(1) = {T1name};
+        matlabbatch{1}.spm.spatial.preproc.channel(1).biasreg = 0.001;
+        matlabbatch{1}.spm.spatial.preproc.channel(1).biasfwhm = 60;
+        matlabbatch{1}.spm.spatial.preproc.channel(1).write = [0 0];
+        batch_index = 1;
+    elseif strcmpi(options.modality,'T12')
+        T1name = dir('*_T1w.nii');
+        T1name = [pwd filesep T1name.name];
+        [pth, T1name, ext] = fileparts(T1name);
+        T1name = [T1name ext];
         
-        % start from here
-        cd(fullfile(datadir, folders(subject).name));
-        
-        % channel T1 or T1 and coregistered T2
-        if strcmpi(options.modality,'T1')
-            cd('newT1');
-            T1name = dir('*_T1w.nii');
-            c   = dir(['c*' T1name.name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
-            rc  = dir(['rc*' T1name.name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
-            wc  = dir(['wc*' T1name.name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
-            seg = dir('*seg8.mat'); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
-            u_rc = dir('u_rc*'); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
-            T1name = [pwd filesep T1name.name];
-            matlabbatch{1}.spm.spatial.preproc.channel(1).vols(1) = {T1name};
-            matlabbatch{1}.spm.spatial.preproc.channel(1).biasreg = 0.001;
-            matlabbatch{1}.spm.spatial.preproc.channel(1).biasfwhm = 60;
-            matlabbatch{1}.spm.spatial.preproc.channel(1).write = [0 0];
-            batch_index = 1;
-        elseif strcmpi(options.modality,'T12')
-            cd('T2');
-            T1name = dir('*_T1w.nii');
-            T1name = [pwd filesep T1name.name];
-            [pth, T1name, ext] = fileparts(T1name);
-            T1name = [T1name ext];
-            
-            cd(['..' filesep 'T2w']);
-            T2name = dir('*_T2w.nii');
-            N = length(T2name);
-            for n=1:N
-                try
-                    if strcmp(T2name(n).name,T1name)
-                        T2name(n) = [];
-                    end
+        cd(['..' filesep 'T2w']);
+        T2name = dir('*_T2w.nii');
+        N = length(T2name);
+        for n=1:N
+            try
+                if strcmp(T2name(n).name,T1name)
+                    T2name(n) = [];
                 end
             end
-            c = dir(['c*' T1name]); for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
-            rc = dir(['rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
-            wc = dir(['wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
-            seg= dir('*seg8.mat'); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
-            u_rc = dir('u_rc*'); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
-            T1name = [pwd filesep T1name];
-            T2name = [pwd filesep T2name(1).name];
-            
-            matlabbatch{1}.spm.spatial.coreg.estwrite.ref(1) = {T1name};
-            matlabbatch{1}.spm.spatial.coreg.estwrite.source = {T2name};
-            matlabbatch{1}.spm.spatial.coreg.estwrite.other = {''};
-            matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = 'nmi';
-            matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [4 2];
-            matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
-            matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.fwhm = [7 7];
-            matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.interp = 4;
-            matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.wrap = [0 0 0];
-            matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask = 0;
-            matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = 'r';
-            
-            matlabbatch{2}.spm.spatial.preproc.channel(1).vols(1) = {T1name};
-            matlabbatch{2}.spm.spatial.preproc.channel(1).biasreg = 0.001;
-            matlabbatch{2}.spm.spatial.preproc.channel(1).biasfwhm = 60;
-            matlabbatch{2}.spm.spatial.preproc.channel(1).write = [0 0];
-            matlabbatch{2}.spm.spatial.preproc.channel(2).vols(1) = cfg_dep('Coregister: Estimate & Reslice: Resliced Images', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','rfiles'));
-            matlabbatch{2}.spm.spatial.preproc.channel(2).biasreg = 0.001;
-            matlabbatch{2}.spm.spatial.preproc.channel(2).biasfwhm = 60;
-            matlabbatch{2}.spm.spatial.preproc.channel(2).write = [0 0];
-            batch_index = 2;
         end
+        c = dir(['c*' T1name]); for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
+        rc = dir(['rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
+        wc = dir(['wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
+        seg= dir('*seg8.mat'); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
+        u_rc = dir('u_rc*'); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
+        T1name = [pwd filesep T1name];
+        T2name = [pwd filesep T2name(1).name];
         
-        % specify nb of Gaussians and Modulations
-        if strcmp(options.Modulate,'Yes')
-            warped = [1 1];
-        else
-            warped = [1 0];
-        end
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,1']};
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).ngaus = options.NGaussian;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).native = [0 1];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).warped = warped;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,2']};
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).ngaus = options.NGaussian;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).native = [0 1];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).warped = warped;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,3']};
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).ngaus = options.NGaussian;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).native = [0 1];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).warped = warped;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,4']};
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).ngaus = 3;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).native = [0 1];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).warped = [1 0];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,5']};
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).ngaus = 4;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).native = [0 1];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).warped = [0 0];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,6']};
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).ngaus = 2;
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).native = [0 1];
-        matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).warped = [0 0];
-        matlabbatch{batch_index}.spm.spatial.preproc.warp.mrf = 1;
-        matlabbatch{batch_index}.spm.spatial.preproc.warp.cleanup = 1;
-        matlabbatch{batch_index}.spm.spatial.preproc.warp.reg = [0 0.001 0.5 0.05 0.2];
-        matlabbatch{batch_index}.spm.spatial.preproc.warp.affreg = 'mni';
-        matlabbatch{batch_index}.spm.spatial.preproc.warp.fwhm = 0;
-        matlabbatch{batch_index}.spm.spatial.preproc.warp.samp = 3;
-        matlabbatch{batch_index}.spm.spatial.preproc.warp.write = [0 0];
+        matlabbatch{1}.spm.spatial.coreg.estwrite.ref(1) = {T1name};
+        matlabbatch{1}.spm.spatial.coreg.estwrite.source = {T2name};
+        matlabbatch{1}.spm.spatial.coreg.estwrite.other = {''};
+        matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = 'nmi';
+        matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [4 2];
+        matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
+        matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.fwhm = [7 7];
+        matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.interp = 4;
+        matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.wrap = [0 0 0];
+        matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask = 0;
+        matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = 'r';
         
-        % compute volumes
-        matlabbatch{batch_index+1}.spm.util.tvol.matfiles(1) = cfg_dep('Segment: Seg Params', substruct('.','val', '{}',{batch_index}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','param', '()',{':'}));
-        matlabbatch{batch_index+1}.spm.util.tvol.tmax = 3;
-        matlabbatch{batch_index+1}.spm.util.tvol.mask = {[spmroot filesep 'tpm' filesep 'mask_ICV.nii,1']};
-        matlabbatch{batch_index+1}.spm.util.tvol.outf = [fileparts(T1name)];
-        
-        % save into a 'batch' variable
-        batch{index} = matlabbatch;
-        index = index+1;
-        clear matlabbatch
+        matlabbatch{2}.spm.spatial.preproc.channel(1).vols(1) = {T1name};
+        matlabbatch{2}.spm.spatial.preproc.channel(1).biasreg = 0.001;
+        matlabbatch{2}.spm.spatial.preproc.channel(1).biasfwhm = 60;
+        matlabbatch{2}.spm.spatial.preproc.channel(1).write = [0 0];
+        matlabbatch{2}.spm.spatial.preproc.channel(2).vols(1) = cfg_dep('Coregister: Estimate & Reslice: Resliced Images', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','rfiles'));
+        matlabbatch{2}.spm.spatial.preproc.channel(2).biasreg = 0.001;
+        matlabbatch{2}.spm.spatial.preproc.channel(2).biasfwhm = 60;
+        matlabbatch{2}.spm.spatial.preproc.channel(2).write = [0 0];
+        batch_index = 2;
     end
+    
+    % specify nb of Gaussians and Modulations
+    if strcmp(options.Modulate,'Yes')
+        warped = [1 1];
+    else
+        warped = [1 0];
+    end
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,1']};
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).ngaus = options.NGaussian;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).native = [0 1];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(1).warped = warped;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,2']};
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).ngaus = options.NGaussian;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).native = [0 1];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(2).warped = warped;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,3']};
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).ngaus = options.NGaussian;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).native = [0 1];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(3).warped = warped;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,4']};
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).ngaus = 3;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).native = [0 1];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(4).warped = [1 0];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,5']};
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).ngaus = 4;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).native = [0 1];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(5).warped = [0 0];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).tpm = {[spmroot filesep 'tpm' filesep 'TPM.nii,6']};
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).ngaus = 2;
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).native = [0 1];
+    matlabbatch{batch_index}.spm.spatial.preproc.tissue(6).warped = [0 0];
+    matlabbatch{batch_index}.spm.spatial.preproc.warp.mrf = 1;
+    matlabbatch{batch_index}.spm.spatial.preproc.warp.cleanup = 1;
+    matlabbatch{batch_index}.spm.spatial.preproc.warp.reg = [0 0.001 0.5 0.05 0.2];
+    matlabbatch{batch_index}.spm.spatial.preproc.warp.affreg = 'mni';
+    matlabbatch{batch_index}.spm.spatial.preproc.warp.fwhm = 0;
+    matlabbatch{batch_index}.spm.spatial.preproc.warp.samp = 3;
+    matlabbatch{batch_index}.spm.spatial.preproc.warp.write = [0 0];
+    
+    % compute volumes
+    matlabbatch{batch_index+1}.spm.util.tvol.matfiles(1) = cfg_dep('Segment: Seg Params', substruct('.','val', '{}',{batch_index}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','param', '()',{':'}));
+    matlabbatch{batch_index+1}.spm.util.tvol.tmax = 3;
+    matlabbatch{batch_index+1}.spm.util.tvol.mask = {[spmroot filesep 'tpm' filesep 'mask_ICV.nii,1']};
+    matlabbatch{batch_index+1}.spm.util.tvol.outf = [fileparts(T1name)];
+    
+    % save into a 'batch' variable
+    batch{index} = matlabbatch;
+    index = index+1;
+    clear matlabbatch
 end
-
 %% run the jobs in parallel
 %-----------------------------------------------------------------------
-disp("run the jobs in parallel")
 cd(datadir)
 N = length(batch);
-for subject=1:N
+parfor subject=1:N
     try
         % spm_jobman('initcfg')
         out{subject}=spm_jobman('run',batch{subject});
@@ -175,16 +177,12 @@ nvoxels    = sum(M(:));                 % how many in mask voxels
 distrib    = NaN(nvoxels,N,3);          % matrix of all voxels by N subjects by 3 tissue classes
 volumes    = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 
-for subject=3:(N+2)
+for subject=1:N
     
     % get the volume information in ml
     cd(datadir)
-    cd(folders(subject).name);
-    if strcmp(options.modality,'T1')
-        cd('newT1')
-    else
-        cd('T2w')
-    end
+    [filepath,name,ext] = fileparts(files{subject});
+    cd(filepath);
     
     try
         f = dir('*seg8.mat'); results = load(f.name);
@@ -216,14 +214,10 @@ clear distrib volumes
 %     c6{subject} = cell2mat(out{subject}{1}.tiss(6).rc);
 % end
 
-for subject=3:(N+2)
+for subject=1:N
     cd(datadir)
-    cd(folders(subject).name);
-    if strcmp(options.modality,'T1')
-        cd('newT1')
-    else
-        cd('T2w')
-    end
+    [filepath,name,ext] = fileparts(files{subject});
+    cd(filepath);
     
     try
         for tissue_class = 1:6
