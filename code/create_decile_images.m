@@ -40,7 +40,7 @@ for tissue_class = 1:3
         end
         fprintf('processing subject %g/%g tissue class %g\n', subject, length(out)-1, tissue_class);
         data = spm_get_data(file,[x,y,z]');                       % in mask data
-        for d=1:9
+        parfor d=1:9
             xd(d) = get_HD(data',d./10);                          % decile (9 values)
         end
         HD(subject,:,tissue_class) = xd';
