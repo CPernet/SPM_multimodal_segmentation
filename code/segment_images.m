@@ -27,16 +27,21 @@ BIDS = spm_BIDS(pwd);
 %% create batch per subjects
 %-----------------------------------------------------------------------
 index = 1;
-if strcmpi(options.modality,'T1')
-    files = spm_BIDS(BIDS,'data','type','T1w');
-    % remove compressed file if uncompressed files exist
-    files((find(endsWith(files,'.nii') == 1) + 1)) = [];
-elseif strcmpi(options.modality,'T12')
-    files = [spm_BIDS(BIDS,'data','type','T1w'); spm_BIDS(BIDS,'data','type','T2w')];
-    % remove compressed file if uncompressed files exist
-    files((find(endsWith(files,'.nii') == 1) + 1)) = [];
+prefileT1 = [spm_BIDS(BIDS,'data','type','T1w')];
+prefileT2 = [spm_BIDS(BIDS,'data','type','T2w')];
+% remove compressed file if uncompressed files exist
+prefileT1((find(endsWith(prefileT1,'.nii') == 1) + 1)) = [];
+prefileT2((find(endsWith(prefileT2,'.nii') == 1) + 1)) = [];
+% create file Map  
+fileMap = struct('subject',{},'path',{},'T1Path',{},'T2Path',{});
+for i = 1:length(prefileT1)
+    fileMap(i).subject = BIDS.subjects(i).name;
+    fileMap(i).path = BIDS.subjects(i).path;
+    fileMap(i).T1Path = prefileT1(i);
+    fileMap(i).T2Path = prefileT2(i);
 end
-for fileIndex = 1:length(files)
+
+for mapIndex = 1:length(fileMap)
     [filepath,name,ext] = fileparts(files{fileIndex});
     cd(filepath);
     decompress_gzip();
