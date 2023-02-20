@@ -60,7 +60,6 @@ for fileIndex = 1:length(files)
         [pth, T1name, ext] = fileparts(T1name);
         T1name = [T1name ext];
         
-        cd(['..' filesep 'T2w']);
         T2name = dir('*_T2w.nii');
         N = length(T2name);
         for n=1:N

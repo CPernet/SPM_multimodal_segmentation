@@ -38,7 +38,7 @@ addpath(root);
 options = struct('modality',[],'NGaussian',[],'Modulate','No');
 
 % run the segmentation 4 times
-for op = 1:4
+for op = 1:1
     if op == 1
         options.modality  = 'T1';
         options.NGaussian = 1;

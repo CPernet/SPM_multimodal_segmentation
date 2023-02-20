@@ -40,7 +40,7 @@ for tissue_class = 1:3
         end
         fprintf('processing subject %g/%g tissue class %g\n', subject, length(out)-1, tissue_class);
         data = spm_get_data(file,[x,y,z]');                       % in mask data
-        parfor d=1:9
+        for d=1:9
             xd(d) = get_HD(data',d./10);                          % decile (9 values)
         end
         HD(subject,:,tissue_class) = xd';
@@ -80,16 +80,16 @@ for tissue_class = 1:3
     
     % save to disk
     for f=1:10
-        V.fname = [outdir filesep 'decile' num2str(f) options.modality '_nG' num2str(options.NGaussian) '.nii'];
+        V.fname = char(fullfile(outdir,filesep,['decile' num2str(f) options.modality '_nG' num2str(options.NGaussian) '.nii']));
         s(f)    = spm_write_vol(V,eval(['img' num2str(f)]));
     end
     
     if tissue_class == 1
-        spm_file_merge(s,[outdir filesep 'GM_deciles_' options.modality '_nG' num2str(options.NGaussian) '.nii'])
+        spm_file_merge(s,char(fullfile(outdir,filesep,['GM_deciles_' options.modality '_nG' num2str(options.NGaussian) '.nii'])))
     elseif tissue_class == 2
-        spm_file_merge(s,[outdir filesep 'WM_deciles_' options.modality '_nG' num2str(options.NGaussian) '.nii'])
+        spm_file_merge(s,char(fullfile(outdir,filesep,['WM_deciles_' options.modality '_nG' num2str(options.NGaussian) '.nii'])))
     elseif tissue_class == 3
-        spm_file_merge(s,[outdir filesep 'CSF_deciles_' options.modality '_nG' num2str(options.NGaussian) '.nii'])
+        spm_file_merge(s,char(fullfile(outdir,filesep,['CSF_deciles_' options.modality '_nG' num2str(options.NGaussian) '.nii'])))
     end
     
     for f=1:10
