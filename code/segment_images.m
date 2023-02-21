@@ -33,57 +33,48 @@ prefileT2 = [spm_BIDS(BIDS,'data','type','T2w')];
 prefileT1((find(endsWith(prefileT1,'.nii') == 1) + 1)) = [];
 prefileT2((find(endsWith(prefileT2,'.nii') == 1) + 1)) = [];
 % create file Map  
-fileMap = struct('subject',{},'path',{},'T1Path',{},'T2Path',{});
+fileMap = struct('ID',{},'path',{},'T1Path',{},'T2Path',{});
 for i = 1:length(prefileT1)
-    fileMap(i).subject = BIDS.subjects(i).name;
-    fileMap(i).path = BIDS.subjects(i).path;
+    fileMap(i).ID = BIDS.subjects(i).name;
+    fileMap(i).path = append(BIDS.subjects(i).path, filesep, 'anat', filesep);
     fileMap(i).T1Path = prefileT1(i);
     fileMap(i).T2Path = prefileT2(i);
 end
 
 for mapIndex = 1:length(fileMap)
-    [filepath,name,ext] = fileparts(files{fileIndex});
-    cd(filepath);
-    decompress_gzip();
+    subjectFiles = fileMap(mapIndex);
     % channel T1 or T1 and coregistered T2
     if strcmpi(options.modality,'T1')
-        T1name = append(name,ext);
-        c   = dir(['c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
-        rc  = dir(['rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
-        wc  = dir(['wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
-        seg = dir('*seg8.mat'); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
-        u_rc = dir('u_rc*'); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
-        T1name = [pwd filesep T1name];
-        matlabbatch{1}.spm.spatial.preproc.channel(1).vols(1) = {T1name};
+        [filepath,name,ext] = fileparts(subjectFiles.T1Path);
+        decompress_gzip(subjectFiles.ID,filepath);
+        T1name = append(name, ext);
+        c   = dir([filepath filesep 'c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
+        rc  = dir([filepath filesep 'rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
+        wc  = dir([filepath filesep 'wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
+        seg = dir(append(filepath, filesep, '*seg8.mat')); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
+        u_rc = dir(append(filepath, filesep, 'u_rc*')); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
+        matlabbatch{1}.spm.spatial.preproc.channel(1).vols(1) = subjectFiles.T1Path;
         matlabbatch{1}.spm.spatial.preproc.channel(1).biasreg = 0.001;
         matlabbatch{1}.spm.spatial.preproc.channel(1).biasfwhm = 60;
         matlabbatch{1}.spm.spatial.preproc.channel(1).write = [0 0];
         batch_index = 1;
+
     elseif strcmpi(options.modality,'T12')
-        T1name = dir('*_T1w.nii');
-        T1name = [pwd filesep T1name.name];
-        [pth, T1name, ext] = fileparts(T1name);
-        T1name = [T1name ext];
+        [filepath,name,ext] = fileparts(subjectFiles.T1Path);
+        decompress_gzip(subjectFiles.ID,filepath);
+        T1name = append(name, ext);
         
-        T2name = dir('*_T2w.nii');
-        N = length(T2name);
-        for n=1:N
-            try
-                if strcmp(T2name(n).name,T1name)
-                    T2name(n) = [];
-                end
-            end
-        end
-        c = dir(['c*' T1name]); for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
-        rc = dir(['rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
-        wc = dir(['wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
-        seg= dir('*seg8.mat'); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
-        u_rc = dir('u_rc*'); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
-        T1name = [pwd filesep T1name];
-        T2name = [pwd filesep T2name(1).name];
+        [filepath,name,ext] = fileparts(subjectFiles.T2Path);
+        T2name = append(name, ext);
+
+        c   = dir([filepath filesep 'c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
+        rc  = dir([filepath filesep 'rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
+        wc  = dir([filepath filesep 'wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
+        seg = dir(append(filepath, filesep, '*seg8.mat')); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
+        u_rc = dir(append(filepath, filesep, 'u_rc*')); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end
         
-        matlabbatch{1}.spm.spatial.coreg.estwrite.ref(1) = {T1name};
-        matlabbatch{1}.spm.spatial.coreg.estwrite.source = {T2name};
+        matlabbatch{1}.spm.spatial.coreg.estwrite.ref(1) = subjectFiles.T1Path;
+        matlabbatch{1}.spm.spatial.coreg.estwrite.source = subjectFiles.T2Path;
         matlabbatch{1}.spm.spatial.coreg.estwrite.other = {''};
         matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = 'nmi';
         matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [4 2];
@@ -94,7 +85,7 @@ for mapIndex = 1:length(fileMap)
         matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask = 0;
         matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = 'r';
         
-        matlabbatch{2}.spm.spatial.preproc.channel(1).vols(1) = {T1name};
+        matlabbatch{2}.spm.spatial.preproc.channel(1).vols(1) = subjectFiles.T1Path;
         matlabbatch{2}.spm.spatial.preproc.channel(1).biasreg = 0.001;
         matlabbatch{2}.spm.spatial.preproc.channel(1).biasfwhm = 60;
         matlabbatch{2}.spm.spatial.preproc.channel(1).write = [0 0];
@@ -156,7 +147,6 @@ for mapIndex = 1:length(fileMap)
 end
 %% run the jobs in parallel
 %-----------------------------------------------------------------------
-cd(datadir)
 N = length(batch);
 parfor subject=1:N
     try
@@ -184,26 +174,22 @@ volumes    = NaN(N,3);                  % matrix of N subjects by 3 tissue class
 for subject=1:N
     
     % get the volume information in ml
-    cd(datadir)
-    [filepath,name,ext] = fileparts(files{subject});
-    cd(filepath);
-    
     try
-        f = dir('*seg8.mat'); results = load(f.name);
+        f = dir(append(fileMap(subject).path, filesep, '*seg8.mat')); results = load(f.name);
         disp(results);
         volumes(subject-2,:) = results.volumes.litres*1000;
         
         % get the in mask voxel distributions
         for tissue_class = 1:3
-            tmp = dir(['wc' num2str(tissue_class) '*.nii']);
+            tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
             distrib(:,subject-2,tissue_class) = spm_get_data(tmp.name,[x,y,z]');
         end
     end
 end
 temp_name = ['volumes' options.modality '_nG' num2str(options.NGaussian)];
-save(outdir+filesep+temp_name,'volumes','-v7.3')
+save(append(outdir, temp_name, 'volumes', '-v7.3'))
 temp_name = ['distrib' options.modality '_nG' num2str(options.NGaussian)];
-save(outdir+filesep+temp_name,'distrib','-v7.3')
+save(append(outdir, temp_name, 'distrib', '-v7.3'))
 clear distrib volumes
 
 %% generate the DARTEL template
@@ -219,13 +205,10 @@ clear distrib volumes
 % end
 
 for subject=1:N
-    cd(datadir)
-    [filepath,name,ext] = fileparts(files{subject});
-    cd(filepath);
     
     try
         for tissue_class = 1:6
-            tmp = dir(['rc' num2str(tissue_class) '*.nii']);
+            tmp = dir([fileMap(subject).path filesep 'rc' num2str(tissue_class) '*.nii']);
             if tissue_class == 1
                 c1{subject-2} = [tmp.folder filesep tmp.name];
             elseif tissue_class == 2

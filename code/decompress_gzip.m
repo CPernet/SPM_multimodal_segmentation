@@ -1,8 +1,9 @@
-function decompress_gzip()
+function decompress_gzip(subjectID, path)
 %   Decompresses a gzip file
 %
 %   Inputs:
-%       datadir
+%       subjectID: ID of subject
+%       path: folder path 
 %
 %   Outputs:
 %       None
@@ -12,19 +13,19 @@ function decompress_gzip()
 %       OSError: If the file is not a gzip file
 %
 %   Example:
-%       decompress_gzip()
+%       decompress_gzip(subjectID, path)
 
     % Check that the file exists
-    if ~isempty(dir('*.nii'))
+    if ~isempty(dir(append(path, filesep,subjectID, '*.nii')))
         return;
     end
 
     % Check that the file is a gzip file
-    if isempty(dir('*.nii.gz'))
+    if isempty(dir(append(path, filesep, subjectID, '*.nii.gz')))
         error('IOError: If the file does not exist');
     end
 
     % Gunzip the file
-    gunzip('*.nii.gz');
+    gunzip(append(path, filesep, subjectID, '*.nii.gz'));
 end
 
