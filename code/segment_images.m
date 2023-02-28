@@ -4,12 +4,6 @@ function out = segment_images(datadir,outdir,options)
 % return the jobs
 %
 % INPUTS datadir directory where all the data are 
-%                 this is not BIDS so the mapping is done in the code (i.e. either map data as below or recode, sorry)
-%                 this is one folder per subject with subdirectory 'newT1' and 'T2'
-%                     sub-001/newT1/somename.nii
-%                     sub-001/T2/somename.nii
-%                     sub-002/newT1/somename.nii
-%                     sub-002/T2/somename.nii
 %        outdir where to save the volumes and distrib mat files
 %        options structure with 'modality', 'NGaussian','Modulate' options
 %
