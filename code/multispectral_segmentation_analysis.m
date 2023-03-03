@@ -20,7 +20,7 @@ clear variales
 %% set up the directories
 root    = fileparts(which('multispectral_segmentation_analysis.m')); cd(root)
 datadir = append(fullfile(root, '..'), filesep,'sourcedata', filesep);
-outdir  = append(fullfile(root, '..'),  filesep, '/derivatives/', filesep);
+outdir  = append(fullfile(root, '..'),  filesep, 'derivatives', filesep);
 addpath(root); 
 
 %% Image processing
