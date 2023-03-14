@@ -169,7 +169,7 @@ for subject=1:N
     
     % get the volume information in ml
     try
-        f = dir(append(fileMap(subject).path, filesep, '*seg8.mat')); results = load(f.name);
+        f = dir(append(fileMap(subject).path, filesep, '*seg8.mat')); results = load(fullfile(f.folder, f.name));
         disp(results);
         volumes(subject-2,:) = results.volumes.litres*1000;
         
