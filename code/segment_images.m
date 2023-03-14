@@ -176,7 +176,7 @@ for subject=1:N
         % get the in mask voxel distributions
         for tissue_class = 1:3
             tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
-            distrib(:,subject-2,tissue_class) = spm_get_data(tmp.name,[x,y,z]');
+            distrib(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
         end
     end
 end
