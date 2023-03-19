@@ -157,13 +157,14 @@ end
 for p=1:4
     P(p,:) = [spmroot filesep 'tpm' filesep 'TPM.nii,' num2str(p)]; % template 1 to 4
 end
-V          = spm_vol(P);
-M          = single(spm_read_vols(V));
-M          = mean(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
-nvoxels    = sum(M(:));                 % how many in mask voxels
-[x,y,z]    = ind2sub(V(1).dim,find(M)); % location of these voxels
-distrib    = NaN(nvoxels,N,3);          % matrix of all voxels by N subjects by 3 tissue classes
-volumes    = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
+V           = spm_vol(P);
+M           = single(spm_read_vols(V));
+M           = mean(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
+nvoxels     = sum(M(:));                 % how many in mask voxels
+[x,y,z]     = ind2sub(V(1).dim,find(M)); % location of these voxels
+distrib     = NaN(nvoxels,N,3);          % matrix of all voxels by N subjects by 3 tissue classes
+volumes     = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
+dunnIndexes = NaN(N,3);
 
 for subject=1:N
     
@@ -178,6 +179,10 @@ for subject=1:N
             tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
             distrib(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
         end
+        % calculate the dunn index for tissue
+        dunnIndexes(subject, tissue_class) = modified_DunnIndex(fileMap(subject).path, nvoxels);
+
+        % calculate entropy for tissue
     end
 end
 temp_name = ['volumes' options.modality '_nG' num2str(options.NGaussian)];
