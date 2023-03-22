@@ -270,7 +270,7 @@ matlabbatch{1}.spm.tools.dartel.warp.settings.optim.lmreg = 0.01;
 matlabbatch{1}.spm.tools.dartel.warp.settings.optim.cyc = 3;
 matlabbatch{1}.spm.tools.dartel.warp.settings.optim.its = 3;
 out{length(out)+1} = spm_jobman('run',matlabbatch);
-if options.modality == 'T12' && options.NGaussian == 2
+if strcmp(options.modality, 'T12') && options.NGaussian == 2
     clean_up(fileMap, debug);
 end
 
