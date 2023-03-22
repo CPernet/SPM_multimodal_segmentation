@@ -165,7 +165,8 @@ nvoxels     = sum(M(:));                 % how many in mask voxels
 [x,y,z]     = ind2sub(V(1).dim,find(M)); % location of these voxels
 distrib     = NaN(nvoxels,N,3);          % matrix of all voxels by N subjects by 3 tissue classes
 volumes     = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
-dunnIndexes = NaN(N,3);
+dunnIndexes = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
+entropy     = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 
 parfor subject=1:N
     
@@ -184,11 +185,13 @@ parfor subject=1:N
             tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
             distrib(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
             tmp_tissues(:,:,:,tissue_class) = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
-        end
-        % calculate the dunn index for tissues
-        dunnIndexes(subject,:) = modified_DunnIndex(tmp_tissues(:,:,:,1),tmp_tissues(:,:,:,2),tmp_tissues(:,:,:,3));
 
-        % calculate entropy for tissue
+            % calculate entropy for tissue
+            entropy(subject,tissue_class) = image_entropy(spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name))));
+        end
+
+        % calculate the dunn index for tissues
+        dunnIndexes(subject,:) = modified_DunnIndex(tmp_tissues(:,:,:,1),tmp_tissues(:,:,:,2),tmp_tissues(:,:,:,3));       
     end
 end
 % save information
@@ -198,7 +201,7 @@ temp_name = ['distrib' options.modality '_nG' num2str(options.NGaussian)];
 save(append(outdir, temp_name), 'distrib', '-v7.3')
 temp_name = ['dunnIndex' options.modality '_nG' num2str(options.NGaussian)];
 save(append(outdir, temp_name), 'dunnIndexes', '-v7.3')
-clear distrib volumes dunnIndexes
+clear distrib volumes dunnIndexes tmpGM tmp_tissues
 
 %% generate the DARTEL template
 %-----------------------------------------------------------------------
