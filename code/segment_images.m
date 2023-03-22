@@ -187,7 +187,7 @@ parfor subject=1:N
             tmp_tissues(:,:,:,tissue_class) = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
 
             % calculate entropy for tissue
-            entropy(subject,tissue_class) = image_entropy(spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name))));
+            entropy(subject,tissue_class) = image_entropy(tmp);
         end
 
         % calculate the dunn index for tissues
