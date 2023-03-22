@@ -19,7 +19,7 @@ try
     % pass in file names
     dunnIndex(1,:) = modified_DunnIndex(fullfile(spmdir,['tpm' filesep 'TPM_00001.nii']),...
         fullfile(spmdir,['tpm' filesep 'TPM_00002.nii']),...
-        fullfile(spmdir,['tpm' filesep 'TPM_00003.nii']));
+        fullfile(spmdir,['tpm' filesep 'TPM_00003.nii']),1);
 
     % pass in structures
     dunnIndex(2,:) = modified_DunnIndex(Vtemplate(1),Vtemplate(2),Vtemplate(3));
@@ -56,7 +56,7 @@ CSF = zeros(size(CSF));
 expected_value = 0.1/0.5;
 dunnIndex = modified_DunnIndex(GM,WM,CSF);
 if dunnIndex(1) == dunnIndex(2) && ...
-        dunnIndex(1) == expected_value
+        single(dunnIndex(1)) == single(expected_value)
     disp('----------------------------------------')
     disp('test succesfull returning expected value')
     disp('----------------------------------------')
