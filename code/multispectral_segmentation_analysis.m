@@ -16,11 +16,14 @@
 % - Compare tissue distributions via shift funtions and quantify proportions per probability
 % - Compare GM images (density using VBM) 
 
+% internal checks 
+debug = false; % what is happening: set to another value than false
+
 clear variales
 %% set up the directories
 root    = fileparts(which('multispectral_segmentation_analysis.m')); cd(root)
-datadir = append(fullfile(root, '..'), filesep,'sourcedata', filesep);
-outdir  = append(fullfile(root, '..'),  filesep, 'derivatives', filesep);
+datadir = fullfile(root, '..', filesep,'sourcedata', filesep);
+outdir  = fullfile(root, '..',  filesep, 'derivatives', filesep);
 addpath(root); 
 
 %% Image processing
@@ -52,11 +55,11 @@ for op = 1:4
         options.modality  = 'T12';
         options.NGaussian = 2;
     end
-    out{op} = segment_images(datadir,outdir,options);
+    out{op} = segment_images(datadir,outdir,options,debug);
     cd(root); save segmentation_jobs_out out
     
     % compute means and variances
-    for class = 1:3
+   for class = 1:3
         for n=length(out{op})-1:-1:1
             if op < 3
                 V(n) = spm_vol(out{op}{n}{1}.tiss(class).wc{1});
@@ -85,7 +88,7 @@ for op = 1:4
     end
     
     % get deciles and create decile images
-    HD{op} = create_decile_images(out{op},outdir,options);
+    HD{op} = create_decile_images(out{op},outdir,options,debug);
     cd(outdir); save HD HD
     
 end

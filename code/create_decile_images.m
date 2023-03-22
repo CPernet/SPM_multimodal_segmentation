@@ -1,4 +1,4 @@
-function HD = create_decile_images(out,outdir,options)
+function HD = create_decile_images(out,outdir,options,debug)
 % create a series of 4D images (deciles) for the grey, white and csf tissue
 % classes - Harell-Davis estimators are used to find the distribution
 % decile and images subsequently thresholded.
