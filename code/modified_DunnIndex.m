@@ -1,4 +1,4 @@
-function dunnIndex = modified_DunnIndex(GM,WM,CSF)
+function dunnIndex = modified_DunnIndex(varargin)
 
 % The Dunn Index <https://en.wikipedia.org/wiki/Dunn_index> measures the
 % separability of clusters in a image. Here, we propose a modification for
@@ -21,10 +21,15 @@ function dunnIndex = modified_DunnIndex(GM,WM,CSF)
 %
 % Cyril Pernet & Marc Cummings - 2023
 
-figopt = 0; % internal checks turning plotting options on the vizualize 
-            % what is happening set to another value than 0
-
 %% deal with inputs
+if nargin < 3
+    error('3 input arguments in expected')
+else
+    GM  = varargin{1};
+    WM  = varargin{2};
+    CSF = varargin{3};
+end
+
 if ischar(GM);  GM  = spm_vol(GM);  end
 if ischar(WM);  WM  = spm_vol(WM);  end
 if ischar(CSF); CSF = spm_vol(CSF); end
@@ -42,6 +47,12 @@ tissues          = NaN(size(GM,1), size(GM,2), size(GM,3), 3);
 tissues(:,:,:,1) = GM;
 tissues(:,:,:,2) = WM;
 tissues(:,:,:,3) = CSF;
+
+figopt = 0; % internal checks turning plotting on to vizualize 
+            % what is happening: set to another value than 0
+if nargin == 4
+    figopt = varargin{4};
+end
 
 if figopt ~= 0
     C(1,:) = [1 0 0];
@@ -101,7 +112,7 @@ for tissue_class = 1:3
     end
 
     if figopt ~= 0
-        histogram(tmp(:),100,'FaceColor',C(tissue_class)); hold on
+        histogram(tmp(:),100,'FaceColor',C(tissue_class,:)); hold on
         grid on; axis([0 1 0 50000]); 
         title('Tissue Distributions: DI',dunnIndex(tissue_class))
         if tissue_class == 1
