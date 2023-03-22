@@ -10,6 +10,7 @@ function out = segment_images(datadir,outdir,options)
 % OUPTPUT out is a cell array of the segmentation + dartel jobs from SPM job manager
 %
 % Cyril Pernet - CCBS, University of Edinburgh / NRU, Rigshospitalet (2022) - CCBY
+% Modifed by Marc Cummings - 2023
 
 %% basic info
 %-----------------------------------------------------------------------
@@ -26,7 +27,7 @@ prefileT2 = [spm_BIDS(BIDS,'data','type','T2w')];
 % remove compressed file if uncompressed files exist
 prefileT1((find(endsWith(prefileT1,'.nii') == 1) + 1)) = [];
 prefileT2((find(endsWith(prefileT2,'.nii') == 1) + 1)) = [];
-% create file Map  
+% create file Map over all the files of the T1 and T2
 fileMap = struct('ID',{},'path',{},'T1Path',{},'T2Path',{});
 for i = 1:length(prefileT1)
     fileMap(i).ID = BIDS.subjects(i).name;
@@ -166,20 +167,20 @@ distrib     = NaN(nvoxels,N,3);          % matrix of all voxels by N subjects by
 volumes     = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 dunnIndexes = NaN(N,3);
 
-for subject=1:N
+parfor subject=1:N
     
     % get the volume information in ml
     try
         f = dir(append(fileMap(subject).path, filesep, '*seg8.mat')); results = load(fullfile(f.folder, f.name));
         disp(results);
         volumes(subject-2,:) = results.volumes.litres*1000;
-        
+
         % get the in mask voxel distributions
         for tissue_class = 1:3
             tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
             distrib(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
         end
-        % calculate the dunn index for tissue
+        % calculate the dunn index for tissues
         dunnIndexes(subject, tissue_class) = modified_DunnIndex(fileMap(subject).path, nvoxels);
 
         % calculate entropy for tissue
@@ -203,7 +204,7 @@ clear distrib volumes
 %     c6{subject} = cell2mat(out{subject}{1}.tiss(6).rc);
 % end
 
-for subject=1:N
+parfor subject=1:N
     
     try
         for tissue_class = 1:6

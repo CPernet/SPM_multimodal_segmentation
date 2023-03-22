@@ -10,7 +10,6 @@ function decompress_gzip(subjectID, path)
 %
 %   Exceptions:
 %       IOError: If the file does not exist
-%       OSError: If the file is not a gzip file
 %
 %   Example:
 %       decompress_gzip(subjectID, path)
