@@ -201,7 +201,9 @@ temp_name = ['distrib' options.modality '_nG' num2str(options.NGaussian)];
 save(append(outdir, temp_name), 'distrib', '-v7.3')
 temp_name = ['dunnIndex' options.modality '_nG' num2str(options.NGaussian)];
 save(append(outdir, temp_name), 'dunnIndexes', '-v7.3')
-clear distrib volumes dunnIndexes tmpGM tmp_tissues
+temp_name = ['entropy' options.modality '_nG' num2str(options.NGaussian)];
+save(append(outdir, temp_name), 'entropy', '-v7.3')
+clear distrib volumes dunnIndexes entropy tmpGM tmp_tissues
 
 %% generate the DARTEL template
 %-----------------------------------------------------------------------
