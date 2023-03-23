@@ -1,4 +1,4 @@
-function out = segment_images(datadir,outdir,options)
+function out = segment_images(datadir,outdir,options,debug)
 % perform the SPM12 segmentation, get tissue volume information, get voxel
 % distributions of normalized images, compute the DARTEL template and
 % return the jobs
@@ -6,6 +6,7 @@ function out = segment_images(datadir,outdir,options)
 % INPUTS datadir directory where all the data are 
 %        outdir where to save the volumes and distrib mat files
 %        options structure with 'modality', 'NGaussian','Modulate' options
+%        debug internal checks 
 %
 % OUPTPUT out is a cell array of the segmentation + dartel jobs from SPM job manager
 %
@@ -58,9 +59,6 @@ for mapIndex = 1:length(fileMap)
         [filepath,name,ext] = fileparts(subjectFiles.T1Path);
         decompress_gzip(subjectFiles.ID,filepath);
         T1name = append(name, ext);
-        
-        [filepath,name,ext] = fileparts(subjectFiles.T2Path);
-        T2name = append(name, ext);
 
         c   = dir([filepath filesep 'c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
         rc  = dir([filepath filesep 'rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
@@ -155,7 +153,7 @@ end
 
 %% for each images get the metadata
 %-----------------------------------------------------------------------
-for p=1:4
+parfor p=1:4
     P(p,:) = [spmroot filesep 'tpm' filesep 'TPM.nii,' num2str(p)]; % template 1 to 4
 end
 V           = spm_vol(P);
@@ -168,7 +166,7 @@ volumes     = NaN(N,3);                  % matrix of N subjects by 3 tissue clas
 dunnIndexes = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 entropy     = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 
-parfor subject=1:N
+for subject=1:N
     
     % get the volume information in ml
     try
@@ -191,18 +189,18 @@ parfor subject=1:N
         end
 
         % calculate the dunn index for tissues
-        dunnIndexes(subject,:) = modified_DunnIndex(tmp_tissues(:,:,:,1),tmp_tissues(:,:,:,2),tmp_tissues(:,:,:,3));       
+        dunnIndexes(subject,:) = modified_DunnIndex(tmp_tissues(:,:,:,1),tmp_tissues(:,:,:,2),tmp_tissues(:,:,:,3), debug);       
     end
 end
 % save information
 temp_name = ['volumes' options.modality '_nG' num2str(options.NGaussian)];
-save(append(outdir, temp_name), 'volumes', '-v7.3')
+save(fullfile(outdir, temp_name), 'volumes', '-v7.3')
 temp_name = ['distrib' options.modality '_nG' num2str(options.NGaussian)];
-save(append(outdir, temp_name), 'distrib', '-v7.3')
+save(fullfile(outdir, temp_name), 'distrib', '-v7.3')
 temp_name = ['dunnIndex' options.modality '_nG' num2str(options.NGaussian)];
-save(append(outdir, temp_name), 'dunnIndexes', '-v7.3')
+save(fullfile(outdir, temp_name), 'dunnIndexes', '-v7.3')
 temp_name = ['entropy' options.modality '_nG' num2str(options.NGaussian)];
-save(append(outdir, temp_name), 'entropy', '-v7.3')
+save(fullfile(outdir, temp_name), 'entropy', '-v7.3')
 clear distrib volumes dunnIndexes entropy tmpGM tmp_tissues
 
 %% generate the DARTEL template
@@ -217,7 +215,7 @@ clear distrib volumes dunnIndexes entropy tmpGM tmp_tissues
 %     c6{subject} = cell2mat(out{subject}{1}.tiss(6).rc);
 % end
 
-parfor subject=1:N
+for subject=1:N
     
     try
         for tissue_class = 1:6
@@ -272,4 +270,7 @@ matlabbatch{1}.spm.tools.dartel.warp.settings.optim.lmreg = 0.01;
 matlabbatch{1}.spm.tools.dartel.warp.settings.optim.cyc = 3;
 matlabbatch{1}.spm.tools.dartel.warp.settings.optim.its = 3;
 out{length(out)+1} = spm_jobman('run',matlabbatch);
+if strcmp(options.modality, 'T12') && options.NGaussian == 2
+    clean_up(fileMap, debug);
+end
 
