@@ -16,7 +16,7 @@ function clean_up(fileMap, disable)
         disp('   Deleting uncompressed nifti images   ')
         disp('----------------------------------------')
         parfor mapIndex = 1:length(fileMap)
-            [filepath,name,ext] = fileparts(fileMap(mapIndex).T1Path);
+            [filepath,T1name,ext] = fileparts(fileMap(mapIndex).T1Path);
             delete(string(fileMap(mapIndex).T1Path));
             delete(string(fileMap(mapIndex).T2Path));
             c   = dir([filepath filesep 'c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end

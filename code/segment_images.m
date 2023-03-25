@@ -156,7 +156,7 @@ end
 parfor p=1:4
     P(p,:) = [spmroot filesep 'tpm' filesep 'TPM.nii,' num2str(p)]; % template 1 to 4
 end
-V           = spm_vol(P);
+V           = spm_vol(P); clear P;
 M           = single(spm_read_vols(V));
 M           = mean(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
 nvoxels     = sum(M(:));                 % how many in mask voxels
@@ -166,26 +166,51 @@ volumes     = NaN(N,3);                  % matrix of N subjects by 3 tissue clas
 dunnIndexes = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 entropy     = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 
+% Load arteries and nuclei templates
+arteries_template = [fileparts(which('multispectral_segmentation_analysis.m')), ...
+                               filesep, 'Atlases', filesep, 'Vessels', filesep, ...
+                               'rvesselRadius.nii'];
+nuclei_template   = [fileparts(which('multispectral_segmentation_analysis.m')), ...
+                                     filesep, 'Atlases', filesep, 'Nuclei', filesep, ...
+                                     'rprob_atlas_bilateral.nii'];
+
+% Load template volumes and create masks
+arteries_vol = spm_vol(arteries_template);
+nuclei_vol = spm_vol(nuclei_template);
+
+arteries_mask = single(spm_read_vols(arteries_vol)) > 0.01;
+nuclei_mask = single(spm_read_vols(nuclei_vol)) > 0.01;
+
+% Find voxel coordinates for the masks
+[arteries_x, arteries_y, arteries_z] = ind2sub(arteries_vol.dim, find(arteries_mask));
+[nuclei_x, nuclei_y, nuclei_z] = ind2sub(nuclei_vol(1).dim, find(nuclei_mask));
+
+% matrix of all voxels by N subjects by 3 tissue classes
+distrib_nuclei  = NaN(nvoxels,N,3);          
+distrib_vessels = NaN(nvoxels,N,3);
+
 for subject=1:N
     
     % get the volume information in ml
     try
         f = dir(append(fileMap(subject).path, filesep, '*seg8.mat')); results = load(fullfile(f.folder, f.name));
         disp(results);
-        volumes(subject-2,:) = results.volumes.litres*1000;
-        
+        volumes(subject,:) = results.volumes.litres*1000;
+
         % create array to hold tissue voxels
-        tmpGM      = spm_read_vols(spm_vol(fullfile(spmdir,['tpm' filesep 'TPM_00001.nii'])));
+        tmpGM      = spm_read_vols(spm_vol(fullfile(spmroot,['tpm' filesep 'TPM_00001.nii'])));
         tmp_tissues = NaN(size(tmpGM,1), size(tmpGM,2), size(tmpGM,3), 3);
 
         % get the in mask voxel distributions
         for tissue_class = 1:3
             tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
-            distrib(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
-            tmp_tissues(:,:,:,tissue_class) = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
+            distrib(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
+            tmp_tissues(:,:,:,tissue_class)   = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
+            distrib_nuclei(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [nuclei_x, nuclei_y, nuclei_z]');
+            distrib_vessels(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [arteries_x, arteries_y, arteries_z]');
 
             % calculate entropy for tissue
-            entropy(subject,tissue_class) = image_entropy(tmp);
+            entropy(subject,tissue_class) = image_entropy(fullfile(tmp.folder, tmp.name));
         end
 
         % calculate the dunn index for tissues
@@ -201,7 +226,11 @@ temp_name = ['dunnIndex' options.modality '_nG' num2str(options.NGaussian)];
 save(fullfile(outdir, temp_name), 'dunnIndexes', '-v7.3')
 temp_name = ['entropy' options.modality '_nG' num2str(options.NGaussian)];
 save(fullfile(outdir, temp_name), 'entropy', '-v7.3')
-clear distrib volumes dunnIndexes entropy tmpGM tmp_tissues
+temp_name = ['distrib_nuclei' options.modality '_nG' num2str(options.NGaussian)];
+save(fullfile(outdir, temp_name), 'distrib_nuclei', '-v7.3')
+temp_name = ['distrib_vessels' options.modality '_nG' num2str(options.NGaussian)];
+save(fullfile(outdir, temp_name), 'distrib_vessels', '-v7.3')
+clear distrib volumes dunnIndexes entropy tmpGM tmp_tissues distrib_nuclei distrib_vessels
 
 %% generate the DARTEL template
 %-----------------------------------------------------------------------
@@ -273,4 +302,3 @@ out{length(out)+1} = spm_jobman('run',matlabbatch);
 if strcmp(options.modality, 'T12') && options.NGaussian == 2
     clean_up(fileMap, debug);
 end
-
