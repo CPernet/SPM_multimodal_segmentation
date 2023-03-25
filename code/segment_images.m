@@ -206,8 +206,8 @@ for subject=1:N
             tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
             distrib(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
             tmp_tissues(:,:,:,tissue_class)   = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
-            distrib_nuclei(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [nuclei_x, nuclei_y, nuclei_z]');
-            distrib_vessels(:,subject-2,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [arteries_x, arteries_y, arteries_z]');
+            distrib_nuclei(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [nuclei_x, nuclei_y, nuclei_z]');
+            distrib_vessels(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [arteries_x, arteries_y, arteries_z]');
 
             % calculate entropy for tissue
             entropy(subject,tissue_class) = image_entropy(fullfile(tmp.folder, tmp.name));
