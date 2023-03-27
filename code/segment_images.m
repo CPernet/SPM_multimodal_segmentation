@@ -151,7 +151,7 @@ parfor subject=1:N
 end
 
 
-%% for each images get the metadata
+%% for each images get tissue distributions and metrics
 %-----------------------------------------------------------------------
 parfor p=1:4
     P(p,:) = [spmroot filesep 'tpm' filesep 'TPM.nii,' num2str(p)]; % template 1 to 4
@@ -166,8 +166,8 @@ volumes     = NaN(N,3);                  % matrix of N subjects by 3 tissue clas
 dunnIndexes = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 entropy     = NaN(N,3);                  % matrix of N subjects by 3 tissue classes
 
-% Load arteries and nuclei templates
-arteries_template = [fileparts(which('multispectral_segmentation_analysis.m')), ...
+% Load vessels and nuclei templates
+vessels_template = [fileparts(which('multispectral_segmentation_analysis.m')), ...
                                filesep, 'Atlases', filesep, 'Vessels', filesep, ...
                                'rvesselRadius.nii'];
 nuclei_template   = [fileparts(which('multispectral_segmentation_analysis.m')), ...
@@ -175,20 +175,21 @@ nuclei_template   = [fileparts(which('multispectral_segmentation_analysis.m')), 
                                      'rprob_atlas_bilateral.nii'];
 
 % Load template volumes and create masks
-arteries_vol = spm_vol(arteries_template);
-nuclei_vol = spm_vol(nuclei_template);
+arteries_vol  = spm_vol(vessels_template);
+arteries_mask = spm_read_vols(arteries_vol) > 0.5; % diameters of vessels > 0.5 mm
+nuclei_vol    = spm_vol(nuclei_template);
+nuclei_mask   = spm_read_vols(nuclei_vol) > 0;
 
-arteries_mask = single(spm_read_vols(arteries_vol)) > 0.01;
-nuclei_mask = single(spm_read_vols(nuclei_vol)) > 0.01;
-
-% Find voxel coordinates for the masks
+% Find voxel coordinates for the masks and store in variables
 [arteries_x, arteries_y, arteries_z] = ind2sub(arteries_vol.dim, find(arteries_mask));
-[nuclei_x, nuclei_y, nuclei_z] = ind2sub(nuclei_vol(1).dim, find(nuclei_mask));
+distrib_nuclei  = NaN(length(arteries_x),N,3);          
 
-% matrix of all voxels by N subjects by 3 tissue classes
-distrib_nuclei  = NaN(nvoxels,N,3);          
-distrib_vessels = NaN(nvoxels,N,3);
+for v = size(nuclei_vol,1):-1:1
+    [nuclei_x{v}, nuclei_y{v}, nuclei_z{v}] = ind2sub(nuclei_vol(v).dim, find(squeeze(nuclei_mask(:,:,:,v))));
+    distrib_vessels{v} = NaN(length(nuclei_x{v}),N,3);
+end
 
+% compute
 for subject=1:N
     
     % get the volume information in ml
