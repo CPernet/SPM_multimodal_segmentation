@@ -175,18 +175,18 @@ nuclei_template   = [fileparts(which('multispectral_segmentation_analysis.m')), 
                                      'rprob_atlas_bilateral.nii'];
 
 % Load template volumes and create masks
-arteries_vol  = spm_vol(vessels_template);
-arteries_mask = spm_read_vols(arteries_vol) > 0.5; % diameters of vessels > 0.5 mm
+vessels_vol   = spm_vol(vessels_template);
+vessels_mask  = spm_read_vols(vessels_vol) > 0.5; % diameters of vessels > 0.5 mm
 nuclei_vol    = spm_vol(nuclei_template);
 nuclei_mask   = spm_read_vols(nuclei_vol) > 0;
 
 % Find voxel coordinates for the masks and store in variables
-[arteries_x, arteries_y, arteries_z] = ind2sub(arteries_vol.dim, find(arteries_mask));
-distrib_nuclei  = NaN(length(arteries_x),N,3);          
+[vessels_x, vessels_y, vessels_z] = ind2sub(vessels_vol.dim, find(vessels_mask));
+distrib_vessels                   = NaN(length(vessels_x),N,3);          
 
 for v = size(nuclei_vol,1):-1:1
     [nuclei_x{v}, nuclei_y{v}, nuclei_z{v}] = ind2sub(nuclei_vol(v).dim, find(squeeze(nuclei_mask(:,:,:,v))));
-    distrib_vessels{v} = NaN(length(nuclei_x{v}),N,3);
+    distrib_nuclei{v}                       = NaN(length(nuclei_x{v}),N,3);
 end
 
 % compute
@@ -194,21 +194,23 @@ for subject=1:N
     
     % get the volume information in ml
     try
-        f = dir(append(fileMap(subject).path, filesep, '*seg8.mat')); results = load(fullfile(f.folder, f.name));
-        disp(results);
+        f                  = dir(append(fileMap(subject).path, filesep, '*seg8.mat')); 
+        results            = load(fullfile(f.folder, f.name));
         volumes(subject,:) = results.volumes.litres*1000;
 
         % create array to hold tissue voxels
-        tmpGM      = spm_read_vols(spm_vol(fullfile(spmroot,['tpm' filesep 'TPM_00001.nii'])));
+        tmpGM       = spm_read_vols(spm_vol(fullfile(spmroot,['tpm' filesep 'TPM_00001.nii'])));
         tmp_tissues = NaN(size(tmpGM,1), size(tmpGM,2), size(tmpGM,3), 3);
 
         % get the in mask voxel distributions
         for tissue_class = 1:3
             tmp = dir([fileMap(subject).path filesep 'wc' num2str(tissue_class) '*.nii']);
-            distrib(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
-            tmp_tissues(:,:,:,tissue_class)   = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
-            distrib_nuclei(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [nuclei_x, nuclei_y, nuclei_z]');
-            distrib_vessels(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [arteries_x, arteries_y, arteries_z]');
+            distrib(:,subject,tissue_class)               = spm_get_data(fullfile(tmp.folder, tmp.name),[x,y,z]');
+            tmp_tissues(:,:,:,tissue_class)               = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
+            distrib_vessels(:,subject,tissue_class)       = spm_get_data(fullfile(tmp.folder, tmp.name), [vessels_x, vessels_y, vessels_z]');
+            for v = size(nuclei_vol,1):-1:1
+                distrib_nuclei{v}(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [nuclei_x{v}, nuclei_y{v}, nuclei_z{v}]');
+            end
 
             % calculate entropy for tissue
             entropy(subject,tissue_class) = image_entropy(fullfile(tmp.folder, tmp.name));
