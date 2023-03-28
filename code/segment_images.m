@@ -199,7 +199,7 @@ for subject=1:N
         volumes(subject,:) = results.volumes.litres*1000;
 
         % create array to hold tissue voxels
-        tmpGM       = spm_read_vols(spm_vol(fullfile(spmroot,['tpm' filesep 'TPM_00001.nii'])));
+        tmpGM       = spm_read_vols(spm_vol(fullfile(spmroot,['tpm' filesep 'TPM.nii,1'])));
         tmp_tissues = NaN(size(tmpGM,1), size(tmpGM,2), size(tmpGM,3), 3);
 
         % get the in mask voxel distributions
