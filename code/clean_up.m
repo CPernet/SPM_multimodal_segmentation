@@ -17,8 +17,10 @@ function clean_up(fileMap, disable)
         disp('----------------------------------------')
         parfor mapIndex = 1:length(fileMap)
             [filepath,T1name,ext] = fileparts(fileMap(mapIndex).T1Path);
-            delete(string(fileMap(mapIndex).T1Path));
-            delete(string(fileMap(mapIndex).T2Path));
+            if (contains(fileMap(mapIndex).T1Path,'.nii.gz') && contains(fileMap(mapIndex).T2Path,'.nii.gz'))
+                delete(string(fileMap(mapIndex).T1Path));
+                delete(string(fileMap(mapIndex).T2Path));
+            end
             c   = dir([filepath filesep 'c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
             rc  = dir([filepath filesep 'rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
             wc  = dir([filepath filesep 'wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end

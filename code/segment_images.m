@@ -26,8 +26,10 @@ index = 1;
 prefileT1 = [spm_BIDS(BIDS,'data','type','T1w')];
 prefileT2 = [spm_BIDS(BIDS,'data','type','T2w')];
 % remove compressed file if uncompressed files exist
-prefileT1((find(endsWith(prefileT1,'.nii') == 1) + 1)) = [];
-prefileT2((find(endsWith(prefileT2,'.nii') == 1) + 1)) = [];
+if (contains(prefileT1,'.nii.gz') && contains(prefileT2,'.nii.gz'))
+    prefileT1((find(endsWith(prefileT1,'.nii') == 1) + 1)) = [];
+    prefileT2((find(endsWith(prefileT2,'.nii') == 1) + 1)) = [];
+end
 % create file Map over all the files of the T1 and T2
 fileMap = struct('ID',{},'path',{},'T1Path',{},'T2Path',{});
 for i = 1:length(prefileT1)
