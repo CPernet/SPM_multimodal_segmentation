@@ -93,6 +93,105 @@ for op = 1:4
     
 end
 
+%% Compare means and standard deviations between the 4 segmentations
+% volumes
+load('volumesT1_nG1.mat');  T1_nG1_vol  = volumes; clear volumes
+load('volumesT1_nG2.mat');  T1_nG2_vol  = volumes; clear volumes
+load('volumesT12_nG1.mat'); T12_nG1_vol = volumes; clear volumes
+load('volumesT12_nG2.mat'); T12_nG2_vol = volumes; clear volumes
+
+volumes_std = struct('T1_nG1',std(T1_nG1_vol), 'T1_nG2', std(T1_nG2_vol), ...
+                    'T12_nG1', std(T12_nG1_vol), 'T12_nG2', std(T12_nG2_vol));
+temp_name = ['volumes' '_std' ];
+save(fullfile(outdir, temp_name), 'volumes_std', '-v7.3')
+
+volumes_mean = struct('T1_nG1',mean(T1_nG1_vol), 'T1_nG2', mean(T1_nG2_vol), ...
+                    'T12_nG1', mean(T12_nG1_vol), 'T12_nG2', mean(T12_nG2_vol));
+temp_name = ['volumes' '_mean' ];
+save(fullfile(outdir, temp_name), 'volumes_mean', '-v7.3')
+
+
+% entropy
+load('entropyT1_nG1.mat');  T1_nG1_entropy  = entropy; clear entropy
+load('entropyT1_nG2.mat');  T1_nG2_entropy  = entropy; clear entropy
+load('entropyT12_nG1.mat'); T12_nG1_entropy = entropy; clear entropy
+load('entropyT12_nG2.mat'); T12_nG2_entropy = entropy; clear entropy
+
+entropy_std = struct('T1_nG1',std(T1_nG1_entropy), 'T1_nG2', std(T1_nG2_entropy), ...
+                    'T12_nG1', std(T12_nG1_entropy), 'T12_nG2', std(T12_nG2_entropy));
+temp_name = ['entropy' '_std' ];
+save(fullfile(outdir, temp_name), 'entropy_std', '-v7.3')
+
+entropy_mean = struct('T1_nG1',mean(T1_nG1_entropy), 'T1_nG2', mean(T1_nG2_entropy), ...
+                    'T12_nG1', mean(T12_nG1_entropy), 'T12_nG2', mean(T12_nG2_entropy));
+temp_name = ['entropy' '_mean' ];
+save(fullfile(outdir, temp_name), 'entropy_mean', '-v7.3')
+
+% dunnIndex
+load('dunnIndexT1_nG1.mat');  T1_nG1_dunnIndex  = dunnIndexes; clear dunnIndexes
+load('dunnIndexT1_nG2.mat');  T1_nG2_dunnIndex  = dunnIndexes; clear dunnIndexes
+load('dunnIndexT12_nG1.mat'); T12_nG1_dunnIndex = dunnIndexes; clear dunnIndexes
+load('dunnIndexT12_nG2.mat'); T12_nG2_dunnIndex = dunnIndexes; clear dunnIndexes
+
+dunnIndex_std = struct('T1_nG1',std(T1_nG1_dunnIndex), 'T1_nG2', std(T1_nG2_dunnIndex), ...
+                    'T12_nG1', std(T12_nG1_dunnIndex), 'T12_nG2', std(T12_nG2_dunnIndex));
+temp_name = ['dunnIndex' '_std' ];
+save(fullfile(outdir, temp_name), 'dunnIndex_std', '-v7.3')
+
+dunnIndex_mean = struct('T1_nG1',mean(T1_nG1_dunnIndex), 'T1_nG2', mean(T1_nG2_dunnIndex), ...
+                    'T12_nG1', mean(T12_nG1_dunnIndex), 'T12_nG2', mean(T12_nG2_dunnIndex));
+temp_name = ['dunnIndex' '_mean' ];
+save(fullfile(outdir, temp_name), 'dunnIndex_mean', '-v7.3')
+
+% distrib
+load('distribT1_nG1.mat');  T1_nG1_distrib  = distrib; clear distrib
+load('distribT1_nG2.mat');  T1_nG2_distrib  = distrib; clear distrib
+load('distribT12_nG1.mat'); T12_nG1_distrib = distrib; clear distrib
+load('distribT12_nG2.mat'); T12_nG2_distrib = distrib; clear distrib
+
+distrib_std = struct('T1_nG1',std(T1_nG1_distrib), 'T1_nG2', std(T1_nG2_distrib), ...
+                    'T12_nG1', std(T12_nG1_distrib), 'T12_nG2', std(T12_nG2_distrib));
+temp_name = ['distrib' '_std' ];
+save(fullfile(outdir, temp_name), 'distrib_std', '-v7.3')
+
+distrib_mean = struct('T1_nG1',mean(T1_nG1_distrib), 'T1_nG2', mean(T1_nG2_distrib), ...
+                    'T12_nG1', mean(T12_nG1_distrib), 'T12_nG2', mean(T12_nG2_distrib));
+temp_name = ['distrib' '_mean' ];
+save(fullfile(outdir, temp_name), 'distrib_mean', '-v7.3')
+
+% distrib_vessels
+load('distrib_vesselsT1_nG1.mat');  T1_nG1_distrib_vessels  = distrib_vessels; clear distrib_vessels
+load('distrib_vesselsT1_nG2.mat');  T1_nG2_distrib_vessels  = distrib_vessels; clear distrib_vessels
+load('distrib_vesselsT12_nG1.mat'); T12_nG1_distrib_vessels = distrib_vessels; clear distrib_vessels
+load('distrib_vesselsT12_nG2.mat'); T12_nG2_distrib_vessels = distrib_vessels; clear distrib_vessels
+
+distrib_vessels_std = struct('T1_nG1',std(T1_nG1_distrib_vessels), 'T1_nG2', std(T1_nG2_distrib_vessels), ...
+                    'T12_nG1', std(T12_nG1_distrib_vessels), 'T12_nG2', std(T12_nG2_distrib_vessels));
+temp_name = ['distrib_vessels' '_std' ];
+save(fullfile(outdir, temp_name), 'distrib_vessels_std', '-v7.3')
+
+distrib_vessels_mean = struct('T1_nG1',mean(T1_nG1_distrib_vessels), 'T1_nG2', mean(T1_nG2_distrib_vessels), ...
+                    'T12_nG1', mean(T12_nG1_distrib_vessels), 'T12_nG2', mean(T12_nG2_distrib_vessels));
+temp_name = ['distrib_vessels' '_mean' ];
+save(fullfile(outdir, temp_name), 'distrib_vessels_mean', '-v7.3')
+
+% distrib_nuclei
+load('distrib_nucleiT1_nG1.mat');  T1_nG1_distrib_nuclei  = distrib_nuclei; clear distrib_nuclei
+load('distrib_nucleiT1_nG2.mat');  T1_nG2_distrib_nuclei  = distrib_nuclei; clear distrib_nuclei
+load('distrib_nucleiT12_nG1.mat'); T12_nG1_distrib_nuclei = distrib_nuclei; clear distrib_nuclei
+load('distrib_nucleiT12_nG2.mat'); T12_nG2_distrib_nuclei = distrib_nuclei; clear distrib_nuclei
+
+distrib_nuclei_std = struct('T1_nG1',std(T1_nG1_distrib_nuclei), 'T1_nG2', std(T1_nG2_distrib_nuclei), ...
+                    'T12_nG1', std(T12_nG1_distrib_nuclei), 'T12_nG2', std(T12_nG2_distrib_nuclei));
+temp_name = ['distrib_nuclei' '_std' ];
+save(fullfile(outdir, temp_name), 'distrib_nuclei_std', '-v7.3')
+
+distrib_nuclei_mean = struct('T1_nG1',mean(T1_nG1_distrib_nuclei), 'T1_nG2', mean(T1_nG2_distrib_nuclei), ...
+                    'T12_nG1', mean(T12_nG1_distrib_nuclei), 'T12_nG2', mean(T12_nG2_distrib_nuclei));
+temp_name = ['distrib_nuclei' '_mean' ];
+save(fullfile(outdir, temp_name), 'distrib_nuclei_mean', '-v7.3')
+
+
 %% Compare derived volumes between the 4 segmentations
 load('volumesT1_nG1.mat');  T1_nG1  = volumes; clear volumes
 load('volumesT1_nG2.mat');  T1_nG2  = volumes; clear volumes
