@@ -110,6 +110,25 @@ volumes_mean = struct('T1_nG1',mean(T1_nG1_vol), 'T1_nG2', mean(T1_nG2_vol), ...
 temp_name = ['volumes' '_mean' ];
 save(fullfile(outdir, temp_name), 'volumes_mean', '-v7.3')
 
+bar(volumes_mean.T1_nG1);
+hold on;
+errorbar(volumes_mean.T1_nG1, volumes_std.T1_nG1, '.', 'LineWidth', 1.5);
+hold off;
+nexttile
+bar(volumes_mean.T1_nG2);
+hold on;
+errorbar(volumes_mean.T1_nG2, volumes_std.T1_nG2, '.', 'LineWidth', 1.5);
+hold off;
+nexttile
+bar(volumes_mean.T12_nG1);
+hold on;
+errorbar(volumes_mean.T12_nG1, volumes_std.T12_nG1, '.', 'LineWidth', 1.5);
+hold off;
+nexttile
+bar(volumes_mean.T12_nG2);
+hold on;
+errorbar(volumes_mean.T12_nG2, volumes_std.T12_nG2, '.', 'LineWidth', 1.5);
+hold off;
 
 % entropy
 load('entropyT1_nG1.mat');  T1_nG1_entropy  = entropy; clear entropy
