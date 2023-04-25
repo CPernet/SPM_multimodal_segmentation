@@ -24,7 +24,9 @@ clear variales
 root    = fileparts(which('multispectral_segmentation_analysis.m')); cd(root)
 datadir = fullfile(root, '..', filesep,'sourcedata', filesep);
 outdir  = fullfile(root, '..',  filesep, 'derivatives', filesep);
-addpath(root); 
+addpath(root);
+% Add Robust_Statistical_Toolbox-dev to path
+addpath(genpath('Robust_Statistical_Toolbox-dev'));
 
 %% Image processing
 % Do the segmentation and get the tissue volumes and voxel distributions. 
@@ -105,6 +107,7 @@ volumes_std = struct('T1_nG1',std(T1_nG1_vol), 'T1_nG2', std(T1_nG2_vol), ...
 temp_name = ['volumes' '_std' ];
 save(fullfile(outdir, temp_name), 'volumes_std', '-v7.3')
 
+volumes_GM_mean =   [T1_nG1_vol(:,1) T1_nG2_vol(:,1) T12_nG1_vol(:,1) T12_nG2_vol(:,1)];
 volumes_mean = struct('T1_nG1',mean(T1_nG1_vol), 'T1_nG2', mean(T1_nG2_vol), ...
                     'T12_nG1', mean(T12_nG1_vol), 'T12_nG2', mean(T12_nG2_vol));
 temp_name = ['volumes' '_mean' ];
