@@ -95,43 +95,75 @@ for op = 1:4
     
 end
 
-%% Compare means and standard deviations between the 4 segmentations
+%% Compare trimmed means and 95% HDI between the 4 conditions
+RowNames = {'Gray Matter', 'White Matter', 'Cerebrospinal fluid'};
 % volumes
 load('volumesT1_nG1.mat');  T1_nG1_vol  = volumes; clear volumes
 load('volumesT1_nG2.mat');  T1_nG2_vol  = volumes; clear volumes
 load('volumesT12_nG1.mat'); T12_nG1_vol = volumes; clear volumes
 load('volumesT12_nG2.mat'); T12_nG2_vol = volumes; clear volumes
 
-volumes_std = struct('T1_nG1',std(T1_nG1_vol), 'T1_nG2', std(T1_nG2_vol), ...
-                    'T12_nG1', std(T12_nG1_vol), 'T12_nG2', std(T12_nG2_vol));
-temp_name = ['volumes' '_std' ];
-save(fullfile(outdir, temp_name), 'volumes_std', '-v7.3')
+volumes_GM  = [T1_nG1_vol(:,1) T1_nG2_vol(:,1) T12_nG1_vol(:,1) T12_nG2_vol(:,1)];
+volumes_WM  = [T1_nG1_vol(:,2) T1_nG2_vol(:,2) T12_nG1_vol(:,2) T12_nG2_vol(:,2)];
+volumes_CSF = [T1_nG1_vol(:,3) T1_nG2_vol(:,3) T12_nG1_vol(:,3) T12_nG2_vol(:,3)];
 
-volumes_GM_mean =   [T1_nG1_vol(:,1) T1_nG2_vol(:,1) T12_nG1_vol(:,1) T12_nG2_vol(:,1)];
-volumes_mean = struct('T1_nG1',mean(T1_nG1_vol), 'T1_nG2', mean(T1_nG2_vol), ...
-                    'T12_nG1', mean(T12_nG1_vol), 'T12_nG2', mean(T12_nG2_vol));
-temp_name = ['volumes' '_mean' ];
-save(fullfile(outdir, temp_name), 'volumes_mean', '-v7.3')
+[GM_est, CI_GM]   = rst_data_plot(volumes_GM, 'estimator','trimmed mean');
+[WM_est, CI_WM]   = rst_data_plot(volumes_WM, 'estimator','trimmed mean','newfig','yes');
+[CSF_est, CI_CSF] = rst_data_plot(volumes_CSF, 'estimator','trimmed mean','newfig','yes');
+if(debug)
+    % save plot for volumes trimmed mean and close figure
+    saveas(figure(1), "GM_Volumes_TM.png"); 
+    saveas(figure(2), "WM_Volumes_TM.png");
+    saveas(figure(3), "CSF_Volumes_TM.png");
+end
+close(figure(1));
+close(figure(2));
+close(figure(3));
 
-bar(volumes_mean.T1_nG1);
-hold on;
-errorbar(volumes_mean.T1_nG1, volumes_std.T1_nG1, '.', 'LineWidth', 1.5);
-hold off;
-nexttile
-bar(volumes_mean.T1_nG2);
-hold on;
-errorbar(volumes_mean.T1_nG2, volumes_std.T1_nG2, '.', 'LineWidth', 1.5);
-hold off;
-nexttile
-bar(volumes_mean.T12_nG1);
-hold on;
-errorbar(volumes_mean.T12_nG1, volumes_std.T12_nG1, '.', 'LineWidth', 1.5);
-hold off;
-nexttile
-bar(volumes_mean.T12_nG2);
-hold on;
-errorbar(volumes_mean.T12_nG2, volumes_std.T12_nG2, '.', 'LineWidth', 1.5);
-hold off;
+TrimmedMeans = [GM_est; WM_est; CSF_est];
+LowerConfs   = [CI_GM(1,:); CI_WM(1,:); CI_CSF(1,:)];
+HigherConfs  = [CI_GM(2,:); CI_WM(2,:); CI_CSF(2,:)];
+
+T1_nG1  = [LowerConfs(:,1) TrimmedMeans(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
+
+T = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
+    'RowNames',RowNames);
+writetable(T,'Volumes_TrimmedMeans.csv','WriteRowNames',true);
+
+clear GM_est WM_est CSF_est CI_GM CI_WM CI_CSF TrimmedMeans LowerConfs HigherConfs T1_nG1 T1_nG2 T12_nG1 T12_nG2 T
+
+% Multi compare between the 4 conditions (T1_nG1 vs T1_nG2, T12_nG1 vs T12_nG2, T1_nG1 vs T12_nG1, T1_nG2 vs T12_nG2)
+[diff_GM,CI_GM,p_GM,alphav_GM,h_GM] = rst_multicompare(volumes_GM,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
+[diff_WM,CI_WM,p_WM,alphav_WM,h_WM] = rst_multicompare(volumes_WM,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
+[diff_CSF,CI_CSF,p_CSF,alphav_CSF,h_CSF] = rst_multicompare(volumes_CSF,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
+if(debug)
+    % save plot for Multi compare and close figure
+    saveas(figure(1), "MultiComp_GM.png");
+    saveas(figure(2), "MultiComp_WM.png");
+    saveas(figure(3), "MultiComp_CSF.png");
+end
+close(figure(1));
+close(figure(2));
+close(figure(3));
+
+PairwiseDifferences = [diff_GM; diff_WM; diff_CSF];
+LowerConfs          = [CI_GM(1,:); CI_WM(1,:); CI_CSF(1,:)];
+HigherConfs         = [CI_GM(2,:); CI_WM(2,:); CI_CSF(2,:)];
+PValues             = [p_GM,p_WM, p_CSF];
+AlphaValues         = [alphav_GM; alphav_WM; alphav_CSF];
+Significances       = [h_GM; h_WM; h_CSF];
+
+T1_nG1  = [LowerConfs(:,1) PairwiseDifferences(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) PairwiseDifferences(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) PairwiseDifferences(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) PairwiseDifferences(:,4) HigherConfs(:,4)];
+
+T = table(TrimmedMeans,TrimmedMeansHDIs,...
+    'RowNames',RowNames);
+writetable(T,'Volumes_TrimmedMeans.csv','WriteRowNames',true);
 
 % entropy
 load('entropyT1_nG1.mat');  T1_nG1_entropy  = entropy; clear entropy
@@ -139,31 +171,11 @@ load('entropyT1_nG2.mat');  T1_nG2_entropy  = entropy; clear entropy
 load('entropyT12_nG1.mat'); T12_nG1_entropy = entropy; clear entropy
 load('entropyT12_nG2.mat'); T12_nG2_entropy = entropy; clear entropy
 
-entropy_std = struct('T1_nG1',std(T1_nG1_entropy), 'T1_nG2', std(T1_nG2_entropy), ...
-                    'T12_nG1', std(T12_nG1_entropy), 'T12_nG2', std(T12_nG2_entropy));
-temp_name = ['entropy' '_std' ];
-save(fullfile(outdir, temp_name), 'entropy_std', '-v7.3')
-
-entropy_mean = struct('T1_nG1',mean(T1_nG1_entropy), 'T1_nG2', mean(T1_nG2_entropy), ...
-                    'T12_nG1', mean(T12_nG1_entropy), 'T12_nG2', mean(T12_nG2_entropy));
-temp_name = ['entropy' '_mean' ];
-save(fullfile(outdir, temp_name), 'entropy_mean', '-v7.3')
-
 % dunnIndex
 load('dunnIndexT1_nG1.mat');  T1_nG1_dunnIndex  = dunnIndexes; clear dunnIndexes
 load('dunnIndexT1_nG2.mat');  T1_nG2_dunnIndex  = dunnIndexes; clear dunnIndexes
 load('dunnIndexT12_nG1.mat'); T12_nG1_dunnIndex = dunnIndexes; clear dunnIndexes
 load('dunnIndexT12_nG2.mat'); T12_nG2_dunnIndex = dunnIndexes; clear dunnIndexes
-
-dunnIndex_std = struct('T1_nG1',std(T1_nG1_dunnIndex), 'T1_nG2', std(T1_nG2_dunnIndex), ...
-                    'T12_nG1', std(T12_nG1_dunnIndex), 'T12_nG2', std(T12_nG2_dunnIndex));
-temp_name = ['dunnIndex' '_std' ];
-save(fullfile(outdir, temp_name), 'dunnIndex_std', '-v7.3')
-
-dunnIndex_mean = struct('T1_nG1',mean(T1_nG1_dunnIndex), 'T1_nG2', mean(T1_nG2_dunnIndex), ...
-                    'T12_nG1', mean(T12_nG1_dunnIndex), 'T12_nG2', mean(T12_nG2_dunnIndex));
-temp_name = ['dunnIndex' '_mean' ];
-save(fullfile(outdir, temp_name), 'dunnIndex_mean', '-v7.3')
 
 % distrib
 load('distribT1_nG1.mat');  T1_nG1_distrib  = distrib; clear distrib
@@ -171,31 +183,12 @@ load('distribT1_nG2.mat');  T1_nG2_distrib  = distrib; clear distrib
 load('distribT12_nG1.mat'); T12_nG1_distrib = distrib; clear distrib
 load('distribT12_nG2.mat'); T12_nG2_distrib = distrib; clear distrib
 
-distrib_std = struct('T1_nG1',std(T1_nG1_distrib), 'T1_nG2', std(T1_nG2_distrib), ...
-                    'T12_nG1', std(T12_nG1_distrib), 'T12_nG2', std(T12_nG2_distrib));
-temp_name = ['distrib' '_std' ];
-save(fullfile(outdir, temp_name), 'distrib_std', '-v7.3')
-
-distrib_mean = struct('T1_nG1',mean(T1_nG1_distrib), 'T1_nG2', mean(T1_nG2_distrib), ...
-                    'T12_nG1', mean(T12_nG1_distrib), 'T12_nG2', mean(T12_nG2_distrib));
-temp_name = ['distrib' '_mean' ];
-save(fullfile(outdir, temp_name), 'distrib_mean', '-v7.3')
-
 % distrib_vessels
 load('distrib_vesselsT1_nG1.mat');  T1_nG1_distrib_vessels  = distrib_vessels; clear distrib_vessels
 load('distrib_vesselsT1_nG2.mat');  T1_nG2_distrib_vessels  = distrib_vessels; clear distrib_vessels
 load('distrib_vesselsT12_nG1.mat'); T12_nG1_distrib_vessels = distrib_vessels; clear distrib_vessels
 load('distrib_vesselsT12_nG2.mat'); T12_nG2_distrib_vessels = distrib_vessels; clear distrib_vessels
 
-distrib_vessels_std = struct('T1_nG1',std(T1_nG1_distrib_vessels), 'T1_nG2', std(T1_nG2_distrib_vessels), ...
-                    'T12_nG1', std(T12_nG1_distrib_vessels), 'T12_nG2', std(T12_nG2_distrib_vessels));
-temp_name = ['distrib_vessels' '_std' ];
-save(fullfile(outdir, temp_name), 'distrib_vessels_std', '-v7.3')
-
-distrib_vessels_mean = struct('T1_nG1',mean(T1_nG1_distrib_vessels), 'T1_nG2', mean(T1_nG2_distrib_vessels), ...
-                    'T12_nG1', mean(T12_nG1_distrib_vessels), 'T12_nG2', mean(T12_nG2_distrib_vessels));
-temp_name = ['distrib_vessels' '_mean' ];
-save(fullfile(outdir, temp_name), 'distrib_vessels_mean', '-v7.3')
 
 % distrib_nuclei
 load('distrib_nucleiT1_nG1.mat');  T1_nG1_distrib_nuclei  = distrib_nuclei; clear distrib_nuclei
@@ -203,15 +196,6 @@ load('distrib_nucleiT1_nG2.mat');  T1_nG2_distrib_nuclei  = distrib_nuclei; clea
 load('distrib_nucleiT12_nG1.mat'); T12_nG1_distrib_nuclei = distrib_nuclei; clear distrib_nuclei
 load('distrib_nucleiT12_nG2.mat'); T12_nG2_distrib_nuclei = distrib_nuclei; clear distrib_nuclei
 
-distrib_nuclei_std = struct('T1_nG1',std(T1_nG1_distrib_nuclei), 'T1_nG2', std(T1_nG2_distrib_nuclei), ...
-                    'T12_nG1', std(T12_nG1_distrib_nuclei), 'T12_nG2', std(T12_nG2_distrib_nuclei));
-temp_name = ['distrib_nuclei' '_std' ];
-save(fullfile(outdir, temp_name), 'distrib_nuclei_std', '-v7.3')
-
-distrib_nuclei_mean = struct('T1_nG1',mean(T1_nG1_distrib_nuclei), 'T1_nG2', mean(T1_nG2_distrib_nuclei), ...
-                    'T12_nG1', mean(T12_nG1_distrib_nuclei), 'T12_nG2', mean(T12_nG2_distrib_nuclei));
-temp_name = ['distrib_nuclei' '_mean' ];
-save(fullfile(outdir, temp_name), 'distrib_nuclei_mean', '-v7.3')
 
 
 %% Compare derived volumes between the 4 segmentations
