@@ -157,6 +157,22 @@ Significances       = [h_GM; h_WM; h_CSF];
 
 clear diff_GM diff_WM diff_CSF CI_GM CI_WM CI_CSF PairwiseDifferences LowerConfs HigherConfs PValues AlphaValues Significances T
 
+% correlations GM vs WM GM vs CSF WM vs CSF
+skip_spearman
+
+
+
+% distrib_vessels
+load('distrib_vesselsT1_nG1.mat');  T1_nG1_distrib_vessels  = distrib_vessels; clear distrib_vessels
+load('distrib_vesselsT1_nG2.mat');  T1_nG2_distrib_vessels  = distrib_vessels; clear distrib_vessels
+load('distrib_vesselsT12_nG1.mat'); T12_nG1_distrib_vessels = distrib_vessels; clear distrib_vessels
+load('distrib_vesselsT12_nG2.mat'); T12_nG2_distrib_vessels = distrib_vessels; clear distrib_vessels
+
+% Total IOntracranial Volume (GM+WM+CSF) -- link to dartel template, where
+% does extra-missing volumes go?
+TIV 
+
+
 % HD
 load('HD.mat');
 
@@ -281,6 +297,9 @@ Significances       = [h_GM; h_WM; h_CSF];
 
 clear diff_GM diff_WM diff_CSF CI_GM CI_WM CI_CSF PairwiseDifferences LowerConfs HigherConfs PValues AlphaValues Significances T
 
+
+
+
 % distrib
 load('distribT1_nG1.mat');  T1_nG1_distrib  = distrib; clear distrib
 load('distribT1_nG2.mat');  T1_nG2_distrib  = distrib; clear distrib
@@ -341,11 +360,7 @@ Significances       = [h_GM; h_WM; h_CSF];
 
 clear diff_GM diff_WM diff_CSF CI_GM CI_WM CI_CSF PairwiseDifferences LowerConfs HigherConfs PValues AlphaValues Significances T
 
-% distrib_vessels
-load('distrib_vesselsT1_nG1.mat');  T1_nG1_distrib_vessels  = distrib_vessels; clear distrib_vessels
-load('distrib_vesselsT1_nG2.mat');  T1_nG2_distrib_vessels  = distrib_vessels; clear distrib_vessels
-load('distrib_vesselsT12_nG1.mat'); T12_nG1_distrib_vessels = distrib_vessels; clear distrib_vessels
-load('distrib_vesselsT12_nG2.mat'); T12_nG2_distrib_vessels = distrib_vessels; clear distrib_vessels
+
 
 
 % distrib_nuclei
