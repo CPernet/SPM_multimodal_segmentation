@@ -27,6 +27,8 @@ outdir  = fullfile(root, '..',  filesep, 'derivatives', filesep);
 addpath(root);
 % Add Robust_Statistical_Toolbox-dev to path
 addpath(genpath('Robust_Statistical_Toolbox-dev'));
+% Add Robust-Correlation-2 to path
+addpath(genpath('Robust-Correlations-2'));
 
 %% Image processing
 % Do the segmentation and get the tissue volumes and voxel distributions. 
@@ -96,7 +98,8 @@ for op = 1:4
 end
 
 %% Compare trimmed means and 95% HDI between the 4 conditions
-RowNames = {'Gray Matter', 'White Matter', 'Cerebrospinal fluid'};
+TissueNames = {'Gray Matter', 'White Matter', 'Cerebrospinal fluid'};
+Conditions  = {'T1_nG1', 'T1_nG2', 'T12_nG1', 'T12_nG2', };
 % volumes
 load('volumesT1_nG1.mat');  T1_nG1_vol  = volumes; clear volumes
 load('volumesT1_nG2.mat');  T1_nG2_vol  = volumes; clear volumes
@@ -110,6 +113,20 @@ volumes_CSF = [T1_nG1_vol(:,3) T1_nG2_vol(:,3) T12_nG1_vol(:,3) T12_nG2_vol(:,3)
 [GM_est, CI_GM]   = rst_data_plot(volumes_GM, 'estimator','trimmed mean');
 [WM_est, CI_WM]   = rst_data_plot(volumes_WM, 'estimator','trimmed mean','newfig','yes');
 [CSF_est, CI_CSF] = rst_data_plot(volumes_CSF, 'estimator','trimmed mean','newfig','yes');
+
+% Add x-axis labels
+XL       = get(findall(figure(1),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh-XL(1) : ticLengh : (ticLengh*4)-XL(1));
+xticklabels(Conditions);
+XL       = get(findall(figure(2),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh-XL(1) : ticLengh : (ticLengh*4)-XL(1));
+xticklabels(Conditions);
+XL       = get(findall(figure(3),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh-XL(1) : ticLengh : (ticLengh*4)-XL(1));
+xticklabels(Conditions);
 if(debug)
     % save plot for volumes trimmed mean and close figure
     saveas(figure(1), "GM_Volumes_TM.png"); 
@@ -130,14 +147,27 @@ T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
 T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
 
 T = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
-    'RowNames',RowNames);
+    'RowNames',TissueNames);
 writetable(T,'Volumes_TrimmedMeans.csv','WriteRowNames',true);
-clear GM_est WM_est CSF_est CI_GM CI_WM CI_CSF TrimmedMeans LowerConfs HigherConfs T1_nG1 T1_nG2 T12_nG1 T12_nG2 T
+clear GM_est WM_est CSF_est CI_GM CI_WM CI_CSF TrimmedMeans LowerConfs HigherConfs T1_nG1 T1_nG2 T12_nG1 T12_nG2 T XL ticLengh
 
 % Multi compare between the 4 conditions (T1_nG1 vs T1_nG2, T12_nG1 vs T12_nG2, T1_nG1 vs T12_nG1, T1_nG2 vs T12_nG2)
 [diff_GM,CI_GM,p_GM,alphav_GM,h_GM]      = rst_multicompare(volumes_GM,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
 [diff_WM,CI_WM,p_WM,alphav_WM,h_WM]      = rst_multicompare(volumes_WM,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
 [diff_CSF,CI_CSF,p_CSF,alphav_CSF,h_CSF] = rst_multicompare(volumes_CSF,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
+% Add x-axis labels
+XL       = get(findall(figure(1),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh : ticLengh : (ticLengh*4));
+xticklabels(Conditions);
+XL       = get(findall(figure(2),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh : ticLengh : (ticLengh*4));
+xticklabels(Conditions);
+XL       = get(findall(figure(3),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh : ticLengh : (ticLengh*4));
+xticklabels(Conditions);
 if(debug)
     % save plot for Multi compare and close figure
     saveas(figure(1), "MultiComp_GM.png");
@@ -151,27 +181,90 @@ close(figure(3));
 PairwiseDifferences = [diff_GM; diff_WM; diff_CSF];
 LowerConfs          = [CI_GM(1,:); CI_WM(1,:); CI_CSF(1,:)];
 HigherConfs         = [CI_GM(2,:); CI_WM(2,:); CI_CSF(2,:)];
-PValues             = [p_GM,p_WM, p_CSF];
+PValues             = [p_GM; p_WM; p_CSF];
 AlphaValues         = [alphav_GM; alphav_WM; alphav_CSF];
-Significances       = [h_GM; h_WM; h_CSF];
+Significances       = [h_GM'; h_WM'; h_CSF'];
 
-clear diff_GM diff_WM diff_CSF CI_GM CI_WM CI_CSF PairwiseDifferences LowerConfs HigherConfs PValues AlphaValues Significances T
+T = table(PairwiseDifferences,LowerConfs,HigherConfs, ...
+          PValues,AlphaValues,Significances,...
+          'RowNames',TissueNames);
+writetable(T,'Volumes_multicompare.csv','WriteRowNames',true);
+clear diff_GM diff_WM diff_CSF CI_GM CI_WM CI_CSF p_GM p_WM p_CSF alphav_GM alphav_WM h_GM h_WM h_CSF alphav_CSF PairwiseDifferences LowerConfs HigherConfs PValues AlphaValues Significances T
 
 % correlations GM vs WM GM vs CSF WM vs CSF
-skip_spearman
+[rp_T1_nG1,tp_T1_nG1,CI_T1_nG1,pval_T1_nG1,outid_T1_nG1,h_T1_nG1]       = skipped_Spearman(T1_nG1_vol,[1 2; 1 3; 3 2]);
+[rp_T1_nG2,tp_T1_nG2,CI_T1_nG2,pval_T1_nG2,outid_T1_nG2,h_T1_nG2]       = skipped_Spearman(T1_nG2_vol,[1 2; 1 3; 3 2]);
+[rp_T12_nG1,tp_T12_nG1,CI_T12_nG1,pval_T12_nG1,outid_T12_nG1,h_T12_nG1] = skipped_Spearman(T12_nG1_vol,[1 2; 1 3; 3 2]);
+[rp_T12_nG2,tp_T12_nG2,CI_T12_nG2,pval_T12_nG2,outid_T12_nG2,h_T12_nG2] = skipped_Spearman(T12_nG2_vol,[1 2; 1 3; 3 2]);
 
+SpearmanCorrelations = [rp_T1_nG1'; rp_T1_nG2'; rp_T12_nG1'; rp_T12_nG2'];
+TValues              = [tp_T1_nG1'; tp_T1_nG2'; tp_T12_nG1'; tp_T12_nG2'];
+LowerConfs           = [CI_T1_nG1(1,:); CI_T1_nG2(1,:); CI_T12_nG1(1,:); CI_T12_nG2(1,:)];
+HigherConfs          = [CI_T1_nG1(2,:); CI_T1_nG2(2,:); CI_T12_nG1(2,:); CI_T12_nG2(2,:)];
+PValues              = [pval_T1_nG1'; pval_T1_nG2'; pval_T12_nG1'; pval_T12_nG2'];
+IndexOutliers        = [outid_T1_nG1'; outid_T1_nG2'; outid_T12_nG1'; outid_T12_nG2'];
+Significances        = [h_T1_nG1'; h_T1_nG2'; h_T12_nG1'; h_T12_nG2'];
 
+T = table(SpearmanCorrelations,TValues,LowerConfs, ...
+          HigherConfs,PValues,IndexOutliers, Significances,...
+          'RowNames',Conditions);
+writetable(T,'Volumes_spearman.csv','WriteRowNames',true);
+clear rp_T1_nG1 tp_T1_nG1 CI_T1_nG1 pval_T1_nG1 outid_T1_nG1 h_T1_nG1 rp_T1_nG2 tp_T1_nG2 CI_T1_nG2 pval_T1_nG2 outid_T1_nG2 h_T1_nG2 rp_T12_nG1 tp_T12_nG1 CI_T12_nG1 pval_T12_nG1 outid_T12_nG1 h_T12_nG1 rp_T12_nG2 tp_T12_nG2 CI_T12_nG2 pval_T12_nG2 outid_T12_nG2 h_T12_nG2 SpearmanCorrelations TValues LowerConfs HigherConfs PValues IndexOutliers Significances T TissueNames ticLengh XL
+
+% Total IOntracranial Volume (GM+WM+CSF) -- link to dartel template, where
+% does extra-missing volumes go?
+TIV = volumes_GM + volumes_WM + volumes_CSF;
+[T1_nG1_est, CI_T1_nG1]   = rst_data_plot(TIV(:,1), 'estimator','trimmed mean');
+[T1_nG2_est, CI_T1_nG2]   = rst_data_plot(TIV(:,2), 'estimator','trimmed mean','newfig','yes');
+[T12_nG1_est, CI_T12_nG1] = rst_data_plot(TIV(:,3), 'estimator','trimmed mean','newfig','yes');
+[T12_nG2_est, CI_T12_nG2] = rst_data_plot(TIV(:,4), 'estimator','trimmed mean','newfig','yes');
+% Add x-axis labels
+XL       = get(findall(figure(1),'type','axes'), 'XLim');
+ticLengh = ((XL(2))/2);
+xticks(ticLengh);
+xticklabels(Conditions{1});
+XL       = get(findall(figure(2),'type','axes'), 'XLim');
+ticLengh = ((XL(2))/2);
+xticks(ticLengh);
+xticklabels(Conditions{2});
+XL       = get(findall(figure(3),'type','axes'), 'XLim');
+ticLengh = ((XL(2))/2);
+xticks(ticLengh);
+xticklabels(Conditions{3});
+XL       = get(findall(figure(4),'type','axes'), 'XLim');
+ticLengh = ((XL(2))/2);
+xticks(ticLengh);
+xticklabels(Conditions{4});
+if(debug)
+    % save plot for volumes trimmed mean and close figure
+    saveas(figure(1), "TIV_T1_nG1_Volume_TM.png"); 
+    saveas(figure(2), "TIV_T1_nG2_Volume_TM.png");
+    saveas(figure(3), "TIV_T12_nG1_Volume_TM.png"); 
+    saveas(figure(4), "TIV_T12_nG2_Volume_TM.png");
+end
+close(figure(1));
+close(figure(2));
+close(figure(3));
+close(figure(4));
+
+TrimmedMeans = [T1_nG1_est, T1_nG2_est, T12_nG1_est, T12_nG2_est];
+LowerConfs   = [CI_T1_nG1(1,:), CI_T1_nG2(1,:), CI_T12_nG1(1,:), CI_T12_nG2(1,:)];
+HigherConfs  = [CI_T1_nG1(2,:), CI_T1_nG2(2,:), CI_T12_nG1(2,:), CI_T12_nG2(2,:)];
+
+T1_nG1  = [LowerConfs(:,1) TrimmedMeans(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
+
+T = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2);
+writetable(T,'TIV_Volume_TrimmedMeans.csv','WriteRowNames',true);
+clear T1_nG1_est CI_T1_nG1 T1_nG2_est CI_T1_nG2 T12_nG1_est CI_T12_nG1 T12_nG2_est CI_T12_nG2 TrimmedMeans LowerConfs HigherConfs T1_nG1 T1_nG2 T12_nG1 T12_nG2 T volumes_GM volumes_WM volumes_CSF T1_nG1_vol T1_nG2_vol T12_nG1_vol T12_nG2_vol XL ticLengh TIV
 
 % distrib_vessels
 load('distrib_vesselsT1_nG1.mat');  T1_nG1_distrib_vessels  = distrib_vessels; clear distrib_vessels
 load('distrib_vesselsT1_nG2.mat');  T1_nG2_distrib_vessels  = distrib_vessels; clear distrib_vessels
 load('distrib_vesselsT12_nG1.mat'); T12_nG1_distrib_vessels = distrib_vessels; clear distrib_vessels
 load('distrib_vesselsT12_nG2.mat'); T12_nG2_distrib_vessels = distrib_vessels; clear distrib_vessels
-
-% Total IOntracranial Volume (GM+WM+CSF) -- link to dartel template, where
-% does extra-missing volumes go?
-TIV 
-
 
 % HD
 load('HD.mat');
@@ -219,9 +312,9 @@ clear GM_est WM_est CSF_est CI_GM CI_WM CI_CSF TrimmedMeans LowerConfs HigherCon
 [diff_CSF,CI_CSF,p_CSF,alphav_CSF,h_CSF] = rst_multicompare(entropy_CSF,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
 if(debug)
     % save plot for Multi compare and close figure
-    saveas(figure(1), "MultiComp_GM_vol.png");
-    saveas(figure(2), "MultiComp_WM_vol.png");
-    saveas(figure(3), "MultiComp_CSF_vol.png");
+    saveas(figure(1), "MultiComp_GM_entropy.png");
+    saveas(figure(2), "MultiComp_WM_entropy.png");
+    saveas(figure(3), "MultiComp_CSF_entropy.png");
 end
 close(figure(1));
 close(figure(2));
@@ -280,9 +373,9 @@ clear GM_est WM_est CSF_est CI_GM CI_WM CI_CSF TrimmedMeans LowerConfs HigherCon
 [diff_CSF,CI_CSF,p_CSF,alphav_CSF,h_CSF] = rst_multicompare(dunnIndex_CSF,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
 if(debug)
     % save plot for Multi compare and close figure
-    saveas(figure(1), "MultiComp_GM_vol.png");
-    saveas(figure(2), "MultiComp_WM_vol.png");
-    saveas(figure(3), "MultiComp_CSF_vol.png");
+    saveas(figure(1), "MultiComp_GM_dunnIndex.png");
+    saveas(figure(2), "MultiComp_WM_dunnIndex.png");
+    saveas(figure(3), "MultiComp_CSF_dunnIndex.png");
 end
 close(figure(1));
 close(figure(2));
@@ -343,9 +436,9 @@ clear GM_est WM_est CSF_est CI_GM CI_WM CI_CSF TrimmedMeans LowerConfs HigherCon
 [diff_CSF,CI_CSF,p_CSF,alphav_CSF,h_CSF] = rst_multicompare(tissue_distrib_CSF,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','yes');
 if(debug)
     % save plot for Multi compare and close figure
-    saveas(figure(1), "MultiComp_GM_vol.png");
-    saveas(figure(2), "MultiComp_WM_vol.png");
-    saveas(figure(3), "MultiComp_CSF_vol.png");
+    saveas(figure(1), "MultiComp_GM_tissue_distrib.png");
+    saveas(figure(2), "MultiComp_WM_tissue_distrib.png");
+    saveas(figure(3), "MultiComp_CSF_tissue_distrib.png");
 end
 close(figure(1));
 close(figure(2));
