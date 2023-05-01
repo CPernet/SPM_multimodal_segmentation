@@ -266,6 +266,57 @@ load('distrib_vesselsT1_nG2.mat');  T1_nG2_distrib_vessels  = distrib_vessels; c
 load('distrib_vesselsT12_nG1.mat'); T12_nG1_distrib_vessels = distrib_vessels; clear distrib_vessels
 load('distrib_vesselsT12_nG2.mat'); T12_nG2_distrib_vessels = distrib_vessels; clear distrib_vessels
 
+TM_T1_nG1  = [trimmean(T1_nG1_distrib_vessels(:,:,1), 5)' trimmean(T1_nG1_distrib_vessels(:,:,2), 5)' trimmean(T1_nG1_distrib_vessels(:,:,3), 5)'];
+TM_T1_nG2  = [trimmean(T1_nG2_distrib_vessels(:,:,1), 5)' trimmean(T1_nG2_distrib_vessels(:,:,2), 5)' trimmean(T1_nG2_distrib_vessels(:,:,3), 5)'];
+TM_T12_nG1 = [trimmean(T12_nG1_distrib_vessels(:,:,1), 5)' trimmean(T12_nG1_distrib_vessels(:,:,2), 5)' trimmean(T12_nG1_distrib_vessels(:,:,3), 5)'];
+TM_T12_nG2 = [trimmean(T12_nG2_distrib_vessels(:,:,1), 5)' trimmean(T12_nG2_distrib_vessels(:,:,2), 5)' trimmean(T12_nG2_distrib_vessels(:,:,3), 5)'];
+
+TM_GM  = [TM_T1_nG1(:,1) TM_T1_nG2(:,1) TM_T12_nG1(:,1) TM_T12_nG2(:,1)];
+TM_WM  = [TM_T1_nG1(:,2) TM_T1_nG2(:,2) TM_T12_nG1(:,2) TM_T12_nG2(:,2)];
+TM_CSF = [TM_T1_nG1(:,3) TM_T1_nG2(:,3) TM_T12_nG1(:,3) TM_T12_nG2(:,3)];
+
+[GM_est, CI_GM]   = rst_data_plot(TM_GM, 'estimator','trimmed mean');
+[WM_est, CI_WM]   = rst_data_plot(TM_WM, 'estimator','trimmed mean','newfig','yes');
+[CSF_est, CI_CSF] = rst_data_plot(TM_CSF, 'estimator','trimmed mean','newfig','yes');
+
+% Add x-axis labels
+XL       = get(findall(figure(1),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh-XL(1) : ticLengh : (ticLengh*4)-XL(1));
+xticklabels(Conditions);
+XL       = get(findall(figure(2),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh-XL(1) : ticLengh : (ticLengh*4)-XL(1));
+xticklabels(Conditions);
+XL       = get(findall(figure(3),'type','axes'), 'XLim');
+ticLengh = ((XL(2)-XL(1))/4);
+xticks(ticLengh-XL(1) : ticLengh : (ticLengh*4)-XL(1));
+xticklabels(Conditions);
+if(debug)
+    % save plot for volumes trimmed mean and close figure
+    saveas(figure(1), "GM_vessels_TM.png"); 
+    saveas(figure(2), "WM_vessels_TM.png");
+    saveas(figure(3), "CSF_vessels_TM.png");
+end
+close(figure(1));
+close(figure(2));
+close(figure(3));
+
+TrimmedMeans = [GM_est; WM_est; CSF_est];
+LowerConfs   = [CI_GM(1,:); CI_WM(1,:); CI_CSF(1,:)];
+HigherConfs  = [CI_GM(2,:); CI_WM(2,:); CI_CSF(2,:)];
+
+T1_nG1  = [LowerConfs(:,1) TrimmedMeans(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
+
+T = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
+    'RowNames',TissueNames);
+writetable(T,'Vessels_TrimmedMeans.csv','WriteRowNames',true);
+clear TM_CSF TM_WM TM_GM T1_nG1_distrib_vessels T1_nG2_distrib_vessels T12_nG1_distrib_vessels T12_nG2_distrib_vessels GM_est WM_est CSF_est CI_GM CI_WM CI_CSF TrimmedMeans LowerConfs HigherConfs TM_T1_nG1 TM_T1_nG2 TM_T12_nG1 TM_T12_nG2 T1_nG1 T1_nG2 T12_nG1 T12_nG2 T XL ticLengh
+
+
 % HD
 load('HD.mat');
 
