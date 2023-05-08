@@ -25,10 +25,6 @@ root    = fileparts(which('multispectral_segmentation_analysis.m')); cd(root)
 datadir = fullfile(root, '..', filesep,'sourcedata', filesep);
 outdir  = fullfile(root, '..',  filesep, 'derivatives', filesep);
 addpath(root);
-% Add Robust_Statistical_Toolbox-dev to path
-addpath(genpath('Robust_Statistical_Toolbox-dev'));
-% Add Robust-Correlation-2 to path
-addpath(genpath('Robust-Correlations-2'));
 
 %% Image processing
 % Do the segmentation and get the tissue volumes and voxel distributions. 
