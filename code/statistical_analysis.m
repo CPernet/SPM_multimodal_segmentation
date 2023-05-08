@@ -2,33 +2,33 @@
 % variables are appended with d for discovery (NRU data N=)
 % or with a t for test (ds003653).
 
-cd('results')
+cd('../results')
 
 %% what is the total intracranial volume (TIV) for the four types of segmentation
 GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);           
 WMd  = readtable(['NRU_dataset' filesep 'WhiteMatter_volumes.csv'],'ReadRowNames',false);           
 CSFd = readtable(['NRU_dataset' filesep 'CSF_volumes.csv'],'ReadRowNames',false);           
-TIVd = [GMd(:,1)+WMd(:,1)+CSFd(:,1) GMd(:,2)+WMd(:,2)+CSFd(:,2) ...
-    GMd(:,3)+WMd(:,3)+CSFd(:,3) GMd(:,4)+WMd(:,4)+CSFd(:,4)];
+TIVd = [GMd{:,1}+WMd{:,1}+CSFd{:,1} GMd{:,2}+WMd{:,2}+CSFd{:,2} ...
+    GMd{:,3}+WMd{:,3}+CSFd{:,3} GMd{:,4}+WMd{:,4}+CSFd{:,4}];
 GMt  = readtable(['ds003653' filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);           
 WMt  = readtable(['ds003653' filesep 'WhiteMatter_volumes.csv'],'ReadRowNames',false);           
 CSFt = readtable(['ds003653' filesep 'CSF_volumes.csv'],'ReadRowNames',false);           
-TIVt = [GMt(:,1)+WMt(:,1)+CSFt(:,1) GMt(:,2)+WMt(:,2)+CSFt(:,2) ...
-    GMt(:,3)+WMt(:,3)+CSFt(:,3) GMt(:,4)+WMt(:,4)+CSFt(:,4)];
+TIVt = [GMt{:,1}+WMt{:,1}+CSFt{:,1} GMt{:,2}+WMt{:,2}+CSFt{:,2} ...
+    GMt{:,3}+WMt{:,3}+CSFt{:,3} GMt{:,4}+WMt{:,4}+CSFt{:,4}];
 
 % in the discovery set test main effects and interaction using a Hotelling
 % test (repeated measure ANOVA) and multiple pair differences (alphav is adjusted
 % using Hochberg step-up procedure)
-result = rst_rep_anova_T2(TIVd{:,:},[],[2 2],1000,{'modality','n_gaussians'});
+result = rst_rep_anova_T2(TIVd,[],[2 2],1000,{'modality','n_gaussians'});
 disp('-----');
 warning('significant effect of modality, nb of gaussians and interaction') 
 disp(result)
 disp('-----')
 
 figure; subplot(2,2,1);
-[TIVd_est, TIVd_CI]   = rst_data_plot(TIVd{:,:}, 'estimator','trimmed mean','newfig','sub');
+[TIVd_est, TIVd_CI]   = rst_data_plot(TIVd, 'estimator','trimmed mean','newfig','sub');
 title('TIV discovery set'); subplot(2,2,2)
-[TIVd_diff,TIVd_dCI,TIVd_p,TIVd_alphav,h] = rst_multicompare(TIVd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+[TIVd_diff,TIVd_dCI,TIVd_p,TIVd_alphav,h] = rst_multicompare(TIVd,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
 title('Differences');
 disp('-----');
 warning('adding 1 Gaussian reduces TIV if only T1 is used, but increases it when using T1 and T2 are used');
@@ -37,19 +37,16 @@ warning('adding T2 reduces TIV if only 1 Gaussian, but increases it when using 2
 % replication set - test for the same differences found as above using
 % strict Bonferonni corection
 subplot(2,2,3);
-[TIVt_est, TIVt_CI]   = rst_data_plot(TIVt{:,:}, 'estimator','trimmed mean','newfig','sub');
+[TIVt_est, TIVt_CI]   = rst_data_plot(TIVt, 'estimator','trimmed mean','newfig','sub');
 title('TIV test set'); subplot(2,2,4)
-Data = [TIVt{:,1}-TIVt{:,2}, TIVt{:,3}-TIVt{:,4},...
-    TIVt{:,1}-TIVt{:,3},TIVt{:,2}-TIVt{:,4}];
+Data = [TIVt(:,1)-TIVt(:,2), TIVt(:,3)-TIVt(:,4),...
+    TIVt(:,1)-TIVt(:,3),TIVt(:,2)-TIVt(:,4)];
 [h,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
 ylabel('Trimmed mean differences'); title('Differences')
 
 disp('-----');
 warning('test set confirm that adding 1 Gaussian reduces TIV if only T1 is used, but increases it when using T1 and T2 are used');
 warning('adding T2 reduces TIV if only 1 Gaussian is used, but the change when using 2 Gaussians is not replicated');
-
-% we can see this is true in correlations
-skipped_Spearman(TIVt{:,:},[1 3; 2 4]);
 
 % summary table
 summary = table([TIVd_CI(1,1) TIVd_est(1) TIVd_CI(2,1); TIVt_CI(1,1) TIVt_est(1) TIVt_CI(2,1)],...
