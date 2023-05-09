@@ -26,14 +26,6 @@ datadir = fullfile(root, '..', filesep,'sourcedata', filesep);
 outdir  = fullfile(root, '..',  filesep, 'derivatives', filesep);
 addpath(root);
 
-export_folder = '';
-% '/indirect/staff/cyrilpernet/multispectral_segmentation/Code/SPM_multimodal_segmentation/results/ds003653'
-% '/indirect/staff/cyrilpernet/multispectral_segmentation/Code/SPM_multimodal_segmentation/results/NRU_dataset'
-
-if isempty(export_folder)
-    error('specify where to export data for statistical analysis and sharing')
-end
-
 %% Image processing
 % Do the segmentation and get the tissue volumes and voxel distributions. 
 % For each case, also make a template image with Dartel (segment_images.m).
@@ -147,13 +139,13 @@ vessels_WM = table(mean(tmp1(:,:,2),1)'*100,...
     mean(tmp2(:,:,2),1)'*100, mean(tmp3(:,:,2),1)'*100,...
     mean(tmp4(:,:,2),1)'*100, 'VariableNames', ...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-writetable(vessels_WM,fullfile(export_folder,'Not_WhiteMatter_vessels.csv'))
+writetable(vessels_GM,fullfile(export_folder,'Not_WhiteMatter_vessels.csv'))
 
-vessels_CSF = table(mean(tmp1(:,:,3),1)'*100,...
+vessels_GM = table(mean(tmp1(:,:,3),1)'*100,...
     mean(tmp2(:,:,3),1)'*100, mean(tmp3(:,:,3),1)'*100,...
     mean(tmp4(:,:,3),1)'*100, 'VariableNames', ...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-writetable(vessels_CSF,fullfile(export_folder,'Not_CSF_vessels.csv'))
+writetable(vessels_GM,fullfile(export_folder,'Not_CSF_vessels.csv'))
 
 tmp1 = T1_nG1_distrib_vessels > 0.9; 
 tmp2 = T1_nG2_distrib_vessels > 0.9; 
@@ -170,13 +162,13 @@ vessels_WM = table(mean(tmp1(:,:,2),1)'*100,...
     mean(tmp2(:,:,2),1)'*100, mean(tmp3(:,:,2),1)'*100,...
     mean(tmp4(:,:,2),1)'*100, 'VariableNames', ...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-writetable(vessels_WM,fullfile(export_folder,'WhiteMatter_vessels.csv'))
+writetable(vessels_GM,fullfile(export_folder,'WhiteMatter_vessels.csv'))
 
-vessels_CSF = table(mean(tmp1(:,:,3),1)'*100,...
+vessels_GM = table(mean(tmp1(:,:,3),1)'*100,...
     mean(tmp2(:,:,3),1)'*100, mean(tmp3(:,:,3),1)'*100,...
     mean(tmp4(:,:,3),1)'*100, 'VariableNames', ...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-writetable(vessels_CSF,fullfile(export_folder,'CSF_vessels.csv'))
+writetable(vessels_GM,fullfile(export_folder,'CSF_vessels.csv'))
 
 
 
