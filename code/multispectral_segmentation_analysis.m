@@ -118,12 +118,12 @@ writetable(volumes_GM,fullfile(export_folder,'GrayMatter_volumes.csv'))
 volumes_WM  = table(T1_nG1_vol(:,2),T1_nG2_vol(:,2), ...
     T12_nG1_vol(:,2),T12_nG2_vol(:,2), 'VariableNames',...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-writetable(volumes_GM,fullfile(export_folder,'WhiteMatter_volumes.csv'))
+writetable(volumes_WM,fullfile(export_folder,'WhiteMatter_volumes.csv'))
 
 volumes_CSF = table(T1_nG1_vol(:,3),T1_nG2_vol(:,3), ...
     T12_nG1_vol(:,3),T12_nG2_vol(:,3), 'VariableNames',...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-writetable(volumes_GM,fullfile(export_folder,'CSF_volumes.csv'))
+writetable(volumes_CSF,fullfile(export_folder,'CSF_volumes.csv'))
 
 % distrib_vessels -- mostly classified as below 0.1 or above 0.9
 % summarize across voxels as a frequency
