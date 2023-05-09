@@ -21,32 +21,35 @@ TIVt = [GMt{:,1}+WMt{:,1}+CSFt{:,1} GMt{:,2}+WMt{:,2}+CSFt{:,2} ...
 % using Hochberg step-up procedure)
 result = rst_rep_anova_T2(TIVd,[],[2 2],1000,{'modality','n_gaussians'});
 disp('-----');
-warning('significant effect of modality, nb of gaussians and interaction') 
+warning('significant effect of modality, nb of gaussians but no interaction') 
 disp(result)
 disp('-----')
 
-figure; subplot(2,2,1);
+figure('Name','TIV'); subplot(2,2,1);
 [TIVd_est, TIVd_CI]   = rst_data_plot(TIVd, 'estimator','trimmed mean','newfig','sub');
-title('TIV discovery set'); subplot(2,2,2)
+title('TIV discovery set','Fontsize',12); ylabel('volumes'); subplot(2,2,2)
 [TIVd_diff,TIVd_dCI,TIVd_p,TIVd_alphav,h] = rst_multicompare(TIVd,[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
-title('Differences');
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
 disp('-----');
-warning('adding 1 Gaussian reduces TIV if only T1 is used, but increases it when using T1 and T2 are used');
-warning('adding T2 reduces TIV if only 1 Gaussian, but increases it when using 2 Gaussians');
+warning('adding 1 Gaussian increases TIV by %g and %g ml for unimodal and multimodal segmentation',abs(TIVd_diff(1)),abs(TIVd_diff(2)));
+warning('adding a T2 image decreases TIV by %g and %g ml for 1 Gaussian and 2 Gaussians models',TIVd_diff(3),TIVd_diff(4));
 
 % replication set - test for the same differences found as above using
 % strict Bonferonni corection
 subplot(2,2,3);
 [TIVt_est, TIVt_CI]   = rst_data_plot(TIVt, 'estimator','trimmed mean','newfig','sub');
-title('TIV test set'); subplot(2,2,4)
+title('TIV test set','Fontsize',12); ylabel('volumes'); 
+xlabel('T1-1G T1-2G T12-1G T12-2G'); subplot(2,2,4)
 Data = [TIVt(:,1)-TIVt(:,2), TIVt(:,3)-TIVt(:,4),...
     TIVt(:,1)-TIVt(:,3),TIVt(:,2)-TIVt(:,4)];
 [h,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
-ylabel('Trimmed mean differences'); title('Differences')
-
+TIVt_diff = rst_trimmean(Data);
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+xlabel('1vs.2 3vs.4 1vs.3 2vs.4')
 disp('-----');
-warning('test set confirm that adding 1 Gaussian reduces TIV if only T1 is used, but increases it when using T1 and T2 are used');
-warning('adding T2 reduces TIV if only 1 Gaussian is used, but the change when using 2 Gaussians is not replicated');
+warning('test set confirms differences observed in the discovery set');
+warning('adding 1 Gaussian increases TIV by %g and %g ml for unimodal and multimodal segmentation',abs(TIVt_diff(1)),abs(TIVt_diff(2)));
+warning('adding a T2 image decreases TIV by %g and %g ml for 1 Gaussian and 2 Gaussians models',TIVt_diff(3),TIVt_diff(4));
 
 % summary table
 summary = table([TIVd_CI(1,1) TIVd_est(1) TIVd_CI(2,1); TIVt_CI(1,1) TIVt_est(1) TIVt_CI(2,1)],...
@@ -54,29 +57,83 @@ summary = table([TIVd_CI(1,1) TIVd_est(1) TIVd_CI(2,1); TIVt_CI(1,1) TIVt_est(1)
     [TIVd_CI(1,3) TIVd_est(3) TIVd_CI(2,3); TIVt_CI(1,3) TIVt_est(3) TIVt_CI(2,3)],...
     [TIVd_CI(1,4) TIVd_est(4) TIVd_CI(2,4); TIVt_CI(1,4) TIVt_est(4) TIVt_CI(2,4)],...
     'RowNames',{'discovery','test'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-
-
+disp(summary); warning('note how with 1 Gaussian distributions barely overlap')
 
 %% how are changes in TIV explained by tissue type
 
+figure('Name','Tissue volumes'); 
+subplot(3,4,1);
+[GMd_est, CId_GM]   = rst_data_plot(GMd{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('Gray Matter discovery set','Fontsize',12); ylabel('GM volumes'); subplot(3,4,5);
+[WMd_est, CId_WM]   = rst_data_plot(WMd{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('White Matter discovery set','Fontsize',12); ylabel('WM volumes'); subplot(3,4,9);
+[CSFd_est, CId_CSF] = rst_data_plot(CSFd{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('CSF discovery set','Fontsize',12); ylabel('CSF volumes');
 
-% % Compare trimmed means and 95% HDI between the 4 conditions
-% TissueNames = {'Gray Matter', 'White Matter', 'Cerebrospinal fluid'};
-% Conditions  = {'T1_nG1', 'T1_nG2', 'T12_nG1', 'T12_nG2', };
-% % volumes
-% load('volumesT1_nG1.mat');  T1_nG1_vol  = volumes; clear volumes
-% load('volumesT1_nG2.mat');  T1_nG2_vol  = volumes; clear volumes
-% load('volumesT12_nG1.mat'); T12_nG1_vol = volumes; clear volumes
-% load('volumesT12_nG2.mat'); T12_nG2_vol = volumes; clear volumes
-% 
-% volumes_GM  = [T1_nG1_vol(:,1) T1_nG2_vol(:,1) T12_nG1_vol(:,1) T12_nG2_vol(:,1)];
-% volumes_WM  = [T1_nG1_vol(:,2) T1_nG2_vol(:,2) T12_nG1_vol(:,2) T12_nG2_vol(:,2)];
-% volumes_CSF = [T1_nG1_vol(:,3) T1_nG2_vol(:,3) T12_nG1_vol(:,3) T12_nG2_vol(:,3)];
-% 
-% [GM_est, CI_GM]   = rst_data_plot(volumes_GM, 'estimator','trimmed mean');
-% [WM_est, CI_WM]   = rst_data_plot(volumes_WM, 'estimator','trimmed mean','newfig','yes');
-% [CSF_est, CI_CSF] = rst_data_plot(volumes_CSF, 'estimator','trimmed mean','newfig','yes');
-% 
+subplot(3,4,2);
+[GMd_diff,GMd_dCI,GMd_p,GMd_alphav,h1] = rst_multicompare(GMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+subplot(3,4,6);
+[WMd_diff,WMd_dCI,WMd_p,WMd_alphav,h2] = rst_multicompare(WMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+subplot(3,4,10);
+[CSFd_diff,CSFd_dCI,CSFd_p,CSFd_alphav,h3] = rst_multicompare(CSFd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+
+warning('Using T1 only, adding a Gaussian decreased GM volumes (%g ml) and increase WM (%g ml) and CSF (%g ml) unproportionally (%g ml missing)', ...
+    GMd_diff(1),abs(WMd_diff(1)),abs(CSFd_diff(1)),GMd_diff(1) - abs(WMd_diff(1)) - abs(CSFd_diff(1)))
+warning('Using T1 and T2, adding a Gaussian increased GM (%g ml) and WM (%g ml) but decreased CSF (%g ml) in proportion (diff = %g ml)', ...
+    abs(GMd_diff(2)),abs(WMd_diff(2)),abs(CSFd_diff(2)), abs(GMd_diff(2)) + abs(WMd_diff(2)) - abs(CSFd_diff(2)))
+warning('With 1 Gaussian only, adding the T2 image decreased GM (%g ml) and WM (%g ml) volumes but  increases CSF (%g ml) but unproportionally (%g ml missing)', ...
+    GMd_diff(3),WMd_diff(3),abs(CSFd_diff(3)),GMd_diff(3) + WMd_diff(3) - abs(CSFd_diff(3)))
+warning('With 2 Gaussians, adding the T2 image increased GM volume (%g ml) and decreased WM (%g ml) and CSF (%g ml) volumes but unproportionally (%g ml missing)', ...
+    abs(GMd_diff(4)),WMd_diff(4),CSFd_diff(4), WMd_diff(4) + CSFd_diff(4) - abs(GMd_diff(4)))
+
+% replication set
+subplot(3,4,3);
+[GMt_est, CIt_GM]   = rst_data_plot(GMt{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('Gray Matter test set','Fontsize',12); ylabel('GM volumes'); subplot(3,4,7);
+[WMt_est, CIt_WM]   = rst_data_plot(WMt{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('White Matter test set','Fontsize',12); ylabel('WM volumes'); subplot(3,4,11);
+[CSFt_est, CIt_CSF] = rst_data_plot(CSFt{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('CSF test set','Fontsize',12); ylabel('CSF volumes');
+
+subplot(3,4,4);
+Data = [GMt{:,1}-GMt{:,2}, GMt{:,3}-GMt{:,4},...
+    GMt{:,1}-GMt{:,3},GMt{:,2}-GMt{:,4}];
+[h1,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+GMt_diff = rst_trimmean(Data);
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+subplot(3,4,8);
+Data = [WMt{:,1}-WMt{:,2}, WMt{:,3}-WMt{:,4},...
+    WMt{:,1}-WMt{:,3},WMt{:,2}-WMt{:,4}];
+[h2,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+WMt_diff = rst_trimmean(Data);
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+subplot(3,4,12);
+Data = [CSFt{:,1}-CSFt{:,2}, CSFt{:,3}-CSFt{:,4},...
+    CSFt{:,1}-CSFt{:,3},CSFt{:,2}-CSFt{:,4}];
+[h3,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+CSFt_diff = rst_trimmean(Data);
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+
+warning('Adding a Gaussian has the same effect in the replication set, except for the transfert of volumes between tissues')
+warning('Using T1 only, adding a Gaussian decreased GM volumes (%g ml) and increase WM (%g ml) and CSF (%g ml) in proportion (%g ml missing)', ...
+    GMt_diff(1),abs(WMt_diff(1)),abs(CSFt_diff(1)),GMt_diff(1) - abs(WMt_diff(1)) - abs(CSFt_diff(1)))
+warning('Using T1 and T2, adding a Gaussian increased GM (%g ml) and WM (%g ml) but decreased CSF (%g ml) unproportionally (diff = %g ml)', ...
+    abs(GMt_diff(2)),abs(WMt_diff(2)),abs(CSFt_diff(2)), abs(GMt_diff(2)) + abs(WMt_diff(2)) - abs(CSFt_diff(2)))
+warning('Adding the T2 image does not have the same effect in the replication set')
+warning('With 1 Gaussian only, adding the T2 image decreased volumes for all 3 tissues GM (%g ml), WM (%g ml), CSF (%g ml)', ...
+    GMt_diff(3),WMt_diff(3),CSFt_diff(3))
+warning('With 2 Gaussians, adding the T2 image increased GM (%g ml) and WM (%g ml) volumes but decreased CSF (%g ml) volumes but unproportionally (%g ml missing)', ...
+    abs(GMt_diff(4)),abs(WMt_diff(4)),CSFt_diff(4), CSFt_diff(4) - abs(GMt_diff(4)) - abs(WMt_diff(4)))
+
+
+% look at the relationship between tissue classes using correlations, also
+% compute frequency of change (% subjects showing the change in expected direction)
+
+
+
 % % Add x-axis labels
 % XL       = get(findall(figure(1),'type','axes'), 'XLim');
 % ticLengh = ((XL(2)-XL(1))/4);
