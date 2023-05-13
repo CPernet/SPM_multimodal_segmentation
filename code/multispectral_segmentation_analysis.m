@@ -178,5 +178,44 @@ vessels_CSF = table(mean(tmp1(:,:,3),1)'*100,...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 writetable(vessels_CSF,fullfile(export_folder,'CSF_vessels.csv'))
 
+% Dunn Index
+load('dunnIndexT1_nG1.mat');  T1_nG1_DI  = dunnIndexes; clear dunnIndexes
+load('dunnIndexT1_nG2.mat');  T1_nG2_DI  = dunnIndexes; clear dunnIndexes
+load('dunnIndexT12_nG1.mat'); T12_nG1_DI = dunnIndexes; clear dunnIndexes
+load('dunnIndexT12_nG2.mat'); T12_nG2_DI = dunnIndexes; clear dunnIndexes
 
+dunnIndexes_GM  = table(T1_nG1_DI(:,1),T1_nG2_DI(:,1), ...
+    T12_nG1_DI(:,1),T12_nG2_DI(:,1), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(dunnIndexes_GM,fullfile(export_folder,'GrayMatter_DunnIndexes.csv'))
 
+dunnIndexes_WM  = table(T1_nG1_DI(:,2),T1_nG2_DI(:,2), ...
+    T12_nG1_DI(:,2),T12_nG2_DI(:,2), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(dunnIndexes_WM,fullfile(export_folder,'WhiteMatter_DunnIndexes.csv'))
+
+dunnIndexes_CSF = table(T1_nG1_DI(:,3),T1_nG2_DI(:,3), ...
+    T12_nG1_DI(:,3),T12_nG2_DI(:,3), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(dunnIndexes_CSF,fullfile(export_folder,'CSF_DunnIndexes.csv'))
+
+% Entropy
+load('entropyT1_nG1.mat');  T1_nG1_entropy  = entropy; clear entropy
+load('entropyT1_nG2.mat');  T1_nG2_entropy  = entropy; clear entropy
+load('entropyT12_nG1.mat'); T12_nG1_entropy = entropy; clear entropy
+load('entropyT12_nG2.mat'); T12_nG2_entropy = entropy; clear entropy
+
+entropy_GM  = table(T1_nG1_entropy(:,1),T1_nG2_entropy(:,1), ...
+    T12_nG1_entropy(:,1),T12_nG2_entropy(:,1), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(entropy_GM,fullfile(export_folder,'GrayMatter_entropy.csv'))
+
+entropy_WM  = table(T1_nG1_entropy(:,2),T1_nG2_entropy(:,2), ...
+    T12_nG1_entropy(:,2),T12_nG2_entropy(:,2), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(entropy_WM,fullfile(export_folder,'WhiteMatter_entropy.csv'))
+
+entropy_CSF = table(T1_nG1_entropy(:,3),T1_nG2_entropy(:,3), ...
+    T12_nG1_entropy(:,3),T12_nG2_entropy(:,3), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(entropy_CSF,fullfile(export_folder,'CSF_entropy.csv'))
