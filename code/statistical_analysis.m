@@ -80,14 +80,107 @@ subplot(3,4,10);
 [CSFd_diff,CSFd_dCI,CSFd_p,CSFd_alphav,h3] = rst_multicompare(CSFd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
 ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
 
-warning('Using T1 only, adding a Gaussian decreased GM volumes (%g ml) and increase WM (%g ml) and CSF (%g ml) unproportionally (%g ml missing)', ...
-    GMd_diff(1),abs(WMd_diff(1)),abs(CSFd_diff(1)),GMd_diff(1) - abs(WMd_diff(1)) - abs(CSFd_diff(1)))
-warning('Using T1 and T2, adding a Gaussian increased GM (%g ml) and WM (%g ml) but decreased CSF (%g ml) in proportion (diff = %g ml)', ...
-    abs(GMd_diff(2)),abs(WMd_diff(2)),abs(CSFd_diff(2)), abs(GMd_diff(2)) + abs(WMd_diff(2)) - abs(CSFd_diff(2)))
-warning('With 1 Gaussian only, adding the T2 image decreased GM (%g ml) and WM (%g ml) volumes but  increases CSF (%g ml) but unproportionally (%g ml missing)', ...
-    GMd_diff(3),WMd_diff(3),abs(CSFd_diff(3)),GMd_diff(3) + WMd_diff(3) - abs(CSFd_diff(3)))
-warning('With 2 Gaussians, adding the T2 image increased GM volume (%g ml) and decreased WM (%g ml) and CSF (%g ml) volumes but unproportionally (%g ml missing)', ...
+% look at the relationship between tissue classes using correlations, what
+% does it tell us about how changing model input or parameters changes
+% tissue class attributions
+[rd,td,pvald,rCId,alphav] = Spearman([GMd{:,:} GMd{:,:} WMd{:,:}],[WMd{:,:} CSFd{:,:} CSFd{:,:}]);
+[rt,tt,pvalt,rCIt,alphav] = Spearman([GMt{:,:} GMt{:,:} WMt{:,:}],[WMt{:,:} CSFt{:,:} CSFt{:,:}]);
+
+% results
+% -------
+GMd_change_count  = mean((GMd.T1_nG1-GMd.T1_nG2)>0)*100;
+WMd_change_count  = mean((WMd.T1_nG1-WMd.T1_nG2)<0)*100;
+CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T1_nG2)<0)*100;
+warning('Using T1 only, adding a Gaussian decreased GM volumes by %g ml (%g%% of subjects) and increase WM by %g ml (%g%%) and CSF by %g ml (%g%%) changes in proportion (diff = %g ml)', ...
+    GMd_diff(1),GMd_change_count,abs(WMd_diff(1)),WMd_change_count,abs(CSFd_diff(1)),CSFd_change_count,GMd_diff(1) - abs(WMd_diff(1)) - abs(CSFd_diff(1)))
+warning('the relationships between tissue classes are unchanged')
+figure('Name','Adding a Gaussian to T1 input'); set(gcf,'Color','w'); 
+subplot(2,3,1);
+scatter(GMd.T1_nG1,WMd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(1),(1-alphav)*100,CI(1,1),CI(2,1));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,2);
+scatter(GMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(5),(1-alphav)*100,CI(1,5),CI(2,5));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,3);
+scatter(WMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(9),(1-alphav)*100,CI(1,9),CI(2,9));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,4);
+scatter(GMd.T1_nG2,WMd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',r(2),(1-alphav)*100,CI(1,2),CI(2,2));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,5);
+scatter(GMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',r(6),(1-alphav)*100,CI(1,6),CI(2,6));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,6);
+scatter(WMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',r(10),(1-alphav)*100,CI(1,10),CI(2,10));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+
+
+% -------
+GMd_change_count  = mean((GMd.T12_nG1-GMd.T12_nG2)<0)*100;
+WMd_change_count  = mean((WMd.T12_nG1-WMd.T12_nG2)<0)*100;
+CSFd_change_count = mean((CSFd.T12_nG1-CSFd.T12_nG2)>0)*100;
+warning('Using T1 and T2, adding a Gaussian increased GM by %g ml (%g%% of subjects) and WM by %g ml (%g%%) but decreased CSF by %g ml (%g%%) in proportion (diff = %g ml)', ...
+    abs(GMd_diff(2)),GMd_change_count,abs(WMd_diff(2)),WMd_change_count,abs(CSFd_diff(2)),CSFd_change_count, abs(GMd_diff(2)) + abs(WMd_diff(2)) - abs(CSFd_diff(2)))
+figure('Name','Adding a Gaussian to T1-T2 input'); set(gcf,'Color','w'); 
+
+
+% -------
+GMd_change_count  = mean((GMd.T1_nG1-GMd.T12_nG1)>0)*100;
+WMd_change_count  = mean((WMd.T1_nG1-WMd.T12_nG1)>0)*100;
+CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T12_nG1)<0)*100;
+warning('With 1 Gaussian only, adding the T2 image decreased GM by %g ml (%g%% of subjects) and WM by %g ml (%g%%) but increases CSF by %g ml (%g%%) and unproportionally (%g ml missing)', ...
+    GMd_diff(3),GMd_change_count,WMd_diff(3),WMd_change_count,abs(CSFd_diff(3)),CSFd_change_count,GMd_diff(3) + WMd_diff(3) - abs(CSFd_diff(3)))
+figure('Name','Adding T2 image to the 1 Gaussian model'); set(gcf,'Color','w'); 
+subplot(2,3,1);
+scatter(GMd.T1_nG1,WMd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(1),(1-alphav)*100,CI(1,1),CI(2,1));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,2);
+scatter(GMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(5),(1-alphav)*100,CI(1,5),CI(2,5));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,3);
+scatter(WMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(9),(1-alphav)*100,CI(1,9),CI(2,9));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,4);
+scatter(GMd.T12_nG1,WMd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(3),(1-alphav)*100,CI(1,3),CI(2,3));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,5);
+scatter(GMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(7),(1-alphav)*100,CI(1,7),CI(2,7));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(2,3,6);
+scatter(WMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(11),(1-alphav)*100,CI(1,11),CI(2,11));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+
+
+% -------
+GMd_change_count  = mean((GMd.T1_nG2-GMd.T12_nG2)<0)*100;
+WMd_change_count  = mean((WMd.T1_nG2-WMd.T12_nG2)>0)*100;
+CSFd_change_count = mean((CSFd.T1_nG2-CSFd.T12_nG2)>0)*100;
+warning('With 2 Gaussians, adding the T2 image increased GM volume by %g ml (%g%% of subjects) and decreased WM by %g ml (%g%%) and CSF by %g ml (%g%%) and unproportionally (%g ml missing)', ...
     abs(GMd_diff(4)),WMd_diff(4),CSFd_diff(4), WMd_diff(4) + CSFd_diff(4) - abs(GMd_diff(4)))
+
+
+disp('------------------')
+disp('the proportional changes in tissue volumes adding a Gaussian while')
+disp('the correlation structure is preserved, indicates a change in voxel')
+disp('distribution fitting (mixture) - the unproportional changes in tisue volumes')
+disp('and dispruption of correlations indicates a change in tissue class belonging')
+disp('with some tissue missing!')
+disp('------------------')
+
+
+
 
 % replication set
 subplot(3,4,3);
@@ -118,6 +211,7 @@ CSFt_diff = rst_trimmean(Data);
 ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
 
 warning('Adding a Gaussian has the same effect in the replication set, except for the transfert of volumes between tissues')
+GMt_change_count = mean((GMt.T1_nG1-GMt.T1_nG2)>0)*100
 warning('Using T1 only, adding a Gaussian decreased GM volumes (%g ml) and increase WM (%g ml) and CSF (%g ml) in proportion (%g ml missing)', ...
     GMt_diff(1),abs(WMt_diff(1)),abs(CSFt_diff(1)),GMt_diff(1) - abs(WMt_diff(1)) - abs(CSFt_diff(1)))
 warning('Using T1 and T2, adding a Gaussian increased GM (%g ml) and WM (%g ml) but decreased CSF (%g ml) unproportionally (diff = %g ml)', ...
@@ -129,96 +223,29 @@ warning('With 2 Gaussians, adding the T2 image increased GM (%g ml) and WM (%g m
     abs(GMt_diff(4)),abs(WMt_diff(4)),CSFt_diff(4), CSFt_diff(4) - abs(GMt_diff(4)) - abs(WMt_diff(4)))
 
 
-% look at the relationship between tissue classes using correlations, also
-% compute frequency of change (% subjects showing the change in expected direction)
+% export csv for vessel disptribution, entropy and dunn in the main script
+% analyze here
 
-% Calculate the correlation matrices for each condition
-for condition = 1:4
-    d_correlation_matric(:, :,condition)  = corrcoef([table2array(GMd(:,condition)) table2array(WMd(:,condition)) table2array(CSFd(:,condition))]);
-    t_correlation_matric(:, :,condition)  = corrcoef([table2array(GMt(:,condition)) table2array(WMt(:,condition)) table2array(CSFt(:,condition))]);
-end
+
 
 % Display the correlation matrices for each condition
-summery_corrd = table(table(d_correlation_matric(:,1,1), d_correlation_matric(:,2,1), d_correlation_matric(:,3,1),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    table(d_correlation_matric(:,1,2), d_correlation_matric(:,2,2), d_correlation_matric(:,3,2),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    table(d_correlation_matric(:,1,3), d_correlation_matric(:,2,3), d_correlation_matric(:,3,3),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    table(d_correlation_matric(:,1,4), d_correlation_matric(:,2,4), d_correlation_matric(:,3,4),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    'RowNames',{'GM', 'WM', 'CSF'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-summery_corrt = table(table(t_correlation_matric(:,1,1), t_correlation_matric(:,2,1), t_correlation_matric(:,3,1),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    table(t_correlation_matric(:,1,2), t_correlation_matric(:,2,2), t_correlation_matric(:,3,2),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    table(t_correlation_matric(:,1,3), t_correlation_matric(:,2,3), t_correlation_matric(:,3,3),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    table(t_correlation_matric(:,1,4), t_correlation_matric(:,2,4), t_correlation_matric(:,3,4),'VariableNames',{'GM', 'WM', 'CSF'}), ...
-    'RowNames',{'GM', 'WM', 'CSF'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
-disp("Discovery set");
-disp(summery_corrd);
-disp("Test set");
-disp(summery_corrt);
+% summery_corrd = table(table(d_correlation_matric(:,1,1), d_correlation_matric(:,2,1), d_correlation_matric(:,3,1),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     table(d_correlation_matric(:,1,2), d_correlation_matric(:,2,2), d_correlation_matric(:,3,2),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     table(d_correlation_matric(:,1,3), d_correlation_matric(:,2,3), d_correlation_matric(:,3,3),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     table(d_correlation_matric(:,1,4), d_correlation_matric(:,2,4), d_correlation_matric(:,3,4),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     'RowNames',{'GM', 'WM', 'CSF'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+% summery_corrt = table(table(t_correlation_matric(:,1,1), t_correlation_matric(:,2,1), t_correlation_matric(:,3,1),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     table(t_correlation_matric(:,1,2), t_correlation_matric(:,2,2), t_correlation_matric(:,3,2),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     table(t_correlation_matric(:,1,3), t_correlation_matric(:,2,3), t_correlation_matric(:,3,3),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     table(t_correlation_matric(:,1,4), t_correlation_matric(:,2,4), t_correlation_matric(:,3,4),'VariableNames',{'GM', 'WM', 'CSF'}), ...
+%     'RowNames',{'GM', 'WM', 'CSF'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+% disp("Discovery set");
+% disp(summery_corrd);
+% disp("Test set");
+% disp(summery_corrt);
 
-% compute frequency of change
-frequency_of_change = zeros(3, 4);  % Preallocate a vector to store the frequencies
-% Using T1 only, adding a Gaussian
-GMd_change_count = sum(diff(-1 * [GMd.T1_nG1 GMd.T1_nG2], 1, 2) > 0);
-frequency_of_change(1,1) = -(GMd_change_count / height(GMd)) * 100;
-WMd_change_count = sum(diff(1 * [WMd.T1_nG1 WMd.T1_nG2], 1, 2) > 0);
-frequency_of_change(2,1) = (WMd_change_count / height(WMd)) * 100;
-CSFd_change_count = sum(diff(1 * [CSFd.T1_nG1 CSFd.T1_nG2], 1, 2) > 0);
-frequency_of_change(3,1) = (CSFd_change_count / height(CSFd)) * 100;
-% Using T1 and T2, adding a Gaussian
-GMd_change_count = sum(diff(1 * [GMd.T12_nG1 GMd.T12_nG2], 1, 2) > 0);
-frequency_of_change(1,2) = (GMd_change_count / height(GMd)) * 100;
-WMd_change_count = sum(diff(1 * [WMd.T12_nG1 WMd.T12_nG2], 1, 2) > 0);
-frequency_of_change(2,2) = (WMd_change_count / height(WMd)) * 100;
-CSFd_change_count = sum(diff(-1 * [CSFd.T12_nG1 CSFd.T12_nG2], 1, 2) > 0);
-frequency_of_change(3,2) = -(CSFd_change_count / height(CSFd)) * 100;
-% With 1 Gaussian only, adding the T2 image
-GMd_change_count = sum(diff(-1 * [GMd.T1_nG1 GMd.T12_nG1], 1, 2) > 0);
-frequency_of_change(1,3) = -(GMd_change_count / height(GMd)) * 100;
-WMd_change_count = sum(diff(-1 * [WMd.T1_nG1 WMd.T12_nG1], 1, 2) > 0);
-frequency_of_change(2,3) = -(WMd_change_count / height(WMd)) * 100;
-CSFd_change_count = sum(diff(1 * [CSFd.T1_nG1 CSFd.T12_nG1], 1, 2) > 0);
-frequency_of_change(3,3) = (CSFd_change_count / height(CSFd)) * 100;
-% With 2 Gaussians, adding the T2 image
-GMd_change_count = sum(diff(1 * [GMd.T1_nG2 GMd.T12_nG2], 1, 2) > 0);
-frequency_of_change(1,4) = (GMd_change_count / height(GMd)) * 100;
-WMd_change_count = sum(diff(-1 * [WMd.T1_nG2 WMd.T12_nG2], 1, 2) > 0);
-frequency_of_change(2,4) = -(WMd_change_count / height(WMd)) * 100;
-CSFd_change_count = sum(diff(-1 * [CSFd.T1_nG2 CSFd.T12_nG2], 1, 2) > 0);
-frequency_of_change(3,4) = -(CSFd_change_count / height(CSFd)) * 100;
-disp("Discovery set");
-disp(frequency_of_change);
 
-% Using T1 only, adding a Gaussian
-GMt_change_count = sum(diff(-1 * [GMt.T1_nG1 GMt.T1_nG2], 1, 2) > 0);
-frequency_of_change(1,1) = -(GMt_change_count / height(GMt)) * 100;
-WMt_change_count = sum(diff(1 * [WMt.T1_nG1 WMt.T1_nG2], 1, 2) > 0);
-frequency_of_change(2,1) = (WMt_change_count / height(WMt)) * 100;
-CSFt_change_count = sum(diff(1 * [CSFt.T1_nG1 CSFt.T1_nG2], 1, 2) > 0);
-frequency_of_change(3,1) = (CSFt_change_count / height(CSFt)) * 100;
-% Using T1 and T2, adding a Gaussian
-GMt_change_count = sum(diff(1 * [GMt.T12_nG1 GMt.T12_nG2], 1, 2) > 0);
-frequency_of_change(1,2) = (GMt_change_count / height(GMt)) * 100;
-WMt_change_count = sum(diff(1 * [WMt.T12_nG1 WMt.T12_nG2], 1, 2) > 0);
-frequency_of_change(2,2) = (WMt_change_count / height(WMt)) * 100;
-CSFt_change_count = sum(diff(-1 * [CSFt.T12_nG1 CSFt.T12_nG2], 1, 2) > 0);
-frequency_of_change(3,2) = -(CSFt_change_count / height(CSFt)) * 100;
-% With 1 Gaussian only, adding the T2 image
-GMt_change_count = sum(diff(-1 * [GMt.T1_nG1 GMt.T12_nG1], 1, 2) > 0);
-frequency_of_change(1,3) = -(GMt_change_count / height(GMt)) * 100;
-WMt_change_count = sum(diff(-1 * [WMt.T1_nG1 WMt.T12_nG1], 1, 2) > 0);
-frequency_of_change(2,3) = -(WMt_change_count / height(WMt)) * 100;
-CSFt_change_count = sum(diff(1 * [CSFt.T1_nG1 CSFt.T12_nG1], 1, 2) > 0);
-frequency_of_change(3,3) = (CSFt_change_count / height(CSFt)) * 100;
-% With 2 Gaussians, adding the T2 image
-GMt_change_count = sum(diff(1 * [GMt.T1_nG2 GMt.T12_nG2], 1, 2) > 0);
-frequency_of_change(1,4) = (GMt_change_count / height(GMt)) * 100;
-WMt_change_count = sum(diff(-1 * [WMt.T1_nG2 WMt.T12_nG2], 1, 2) > 0);
-frequency_of_change(2,4) = -(WMt_change_count / height(WMt)) * 100;
-CSFt_change_count = sum(diff(-1 * [CSFt.T1_nG2 CSFt.T12_nG2], 1, 2) > 0);
-frequency_of_change(3,4) = -(CSFt_change_count / height(CSFt)) * 100;
-disp("Discovery set");
-disp(frequency_of_change);
-
-% % Add x-axis labels
+% Add x-axis labels
 % XL       = get(findall(figure(1),'type','axes'), 'XLim');
 % ticLengh = ((XL(2)-XL(1))/4);
 % xticks(ticLengh-XL(1) : ticLengh : (ticLengh*4)-XL(1));
