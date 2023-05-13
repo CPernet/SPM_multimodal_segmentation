@@ -132,7 +132,92 @@ warning('With 2 Gaussians, adding the T2 image increased GM (%g ml) and WM (%g m
 % look at the relationship between tissue classes using correlations, also
 % compute frequency of change (% subjects showing the change in expected direction)
 
+% Calculate the correlation matrices for each condition
+GMd_correlation_matric(:, :)  = corrcoef(table2array(GMd));
+WMd_correlation_matric(:, :)  = corrcoef(table2array(WMd));
+CSFd_correlation_matric(:, :) = corrcoef(table2array(CSFd));
 
+GMt_correlation_matric(:, :)  = corrcoef(table2array(GMt));
+WMt_correlation_matric(:, :)  = corrcoef(table2array(WMt));
+CSFt_correlation_matric(:, :) = corrcoef(table2array(CSFt));
+
+% Display the correlation matrices for each condition
+summery_corrd = table(table(GMd_correlation_matric(:,1),GMd_correlation_matric(:,2),GMd_correlation_matric(:,3),GMd_correlation_matric(:,4), 'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'}), ...
+    table(WMd_correlation_matric(:,1), WMd_correlation_matric(:,2), WMd_correlation_matric(:,3), WMd_correlation_matric(:,4),'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'}), ...
+    table(CSFd_correlation_matric(:,1), CSFd_correlation_matric(:,2), CSFd_correlation_matric(:,3), CSFd_correlation_matric(:,4),'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'}), ...
+    'RowNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'},'VariableNames',{'GM', 'WM', 'CSF'});
+summery_corrt = table(table(GMt_correlation_matric(:,1),GMt_correlation_matric(:,2),GMt_correlation_matric(:,3),GMt_correlation_matric(:,4), 'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'}), ...
+    table(WMt_correlation_matric(:,1), WMt_correlation_matric(:,2), WMt_correlation_matric(:,3), WMt_correlation_matric(:,4),'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'}), ...
+    table(CSFt_correlation_matric(:,1), CSFt_correlation_matric(:,2), CSFt_correlation_matric(:,3), CSFt_correlation_matric(:,4),'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'}), ...
+    'RowNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'},'VariableNames',{'GM', 'WM', 'CSF'});
+disp("Discovery set");
+disp(summery_corrd);
+disp("Test set");
+disp(summery_corrt);
+
+% compute frequency of change
+frequency_of_change = zeros(3, 4);  % Preallocate a vector to store the frequencies
+% Using T1 only, adding a Gaussian
+GMd_change_count = sum(diff(-1 * [GMd.T1_nG1 GMd.T1_nG2], 1, 2) > 0);
+frequency_of_change(1,1) = -(GMd_change_count / height(GMd)) * 100;
+WMd_change_count = sum(diff(1 * [WMd.T1_nG1 WMd.T1_nG2], 1, 2) > 0);
+frequency_of_change(2,1) = (WMd_change_count / height(WMd)) * 100;
+CSFd_change_count = sum(diff(1 * [CSFd.T1_nG1 CSFd.T1_nG2], 1, 2) > 0);
+frequency_of_change(3,1) = (CSFd_change_count / height(CSFd)) * 100;
+% Using T1 and T2, adding a Gaussian
+GMd_change_count = sum(diff(1 * [GMd.T12_nG1 GMd.T12_nG2], 1, 2) > 0);
+frequency_of_change(1,2) = (GMd_change_count / height(GMd)) * 100;
+WMd_change_count = sum(diff(1 * [WMd.T12_nG1 WMd.T12_nG2], 1, 2) > 0);
+frequency_of_change(2,2) = (WMd_change_count / height(WMd)) * 100;
+CSFd_change_count = sum(diff(-1 * [CSFd.T12_nG1 CSFd.T12_nG2], 1, 2) > 0);
+frequency_of_change(3,2) = -(CSFd_change_count / height(CSFd)) * 100;
+% With 1 Gaussian only, adding the T2 image
+GMd_change_count = sum(diff(-1 * [GMd.T1_nG1 GMd.T12_nG1], 1, 2) > 0);
+frequency_of_change(1,3) = -(GMd_change_count / height(GMd)) * 100;
+WMd_change_count = sum(diff(-1 * [WMd.T1_nG1 WMd.T12_nG1], 1, 2) > 0);
+frequency_of_change(2,3) = -(WMd_change_count / height(WMd)) * 100;
+CSFd_change_count = sum(diff(1 * [CSFd.T1_nG1 CSFd.T12_nG1], 1, 2) > 0);
+frequency_of_change(3,3) = (CSFd_change_count / height(CSFd)) * 100;
+% With 2 Gaussians, adding the T2 image
+GMd_change_count = sum(diff(1 * [GMd.T1_nG2 GMd.T12_nG2], 1, 2) > 0);
+frequency_of_change(1,4) = (GMd_change_count / height(GMd)) * 100;
+WMd_change_count = sum(diff(-1 * [WMd.T1_nG2 WMd.T12_nG2], 1, 2) > 0);
+frequency_of_change(2,4) = -(WMd_change_count / height(WMd)) * 100;
+CSFd_change_count = sum(diff(-1 * [CSFd.T1_nG2 CSFd.T12_nG2], 1, 2) > 0);
+frequency_of_change(3,4) = -(CSFd_change_count / height(CSFd)) * 100;
+disp("Discovery set");
+disp(frequency_of_change);
+
+% Using T1 only, adding a Gaussian
+GMt_change_count = sum(diff(-1 * [GMt.T1_nG1 GMt.T1_nG2], 1, 2) > 0);
+frequency_of_change(1,1) = -(GMt_change_count / height(GMt)) * 100;
+WMt_change_count = sum(diff(1 * [WMt.T1_nG1 WMt.T1_nG2], 1, 2) > 0);
+frequency_of_change(2,1) = (WMt_change_count / height(WMt)) * 100;
+CSFt_change_count = sum(diff(1 * [CSFt.T1_nG1 CSFt.T1_nG2], 1, 2) > 0);
+frequency_of_change(3,1) = (CSFt_change_count / height(CSFt)) * 100;
+% Using T1 and T2, adding a Gaussian
+GMt_change_count = sum(diff(1 * [GMt.T12_nG1 GMt.T12_nG2], 1, 2) > 0);
+frequency_of_change(1,2) = (GMt_change_count / height(GMt)) * 100;
+WMt_change_count = sum(diff(1 * [WMt.T12_nG1 WMt.T12_nG2], 1, 2) > 0);
+frequency_of_change(2,2) = (WMt_change_count / height(WMt)) * 100;
+CSFt_change_count = sum(diff(-1 * [CSFt.T12_nG1 CSFt.T12_nG2], 1, 2) > 0);
+frequency_of_change(3,2) = -(CSFt_change_count / height(CSFt)) * 100;
+% With 1 Gaussian only, adding the T2 image
+GMt_change_count = sum(diff(-1 * [GMt.T1_nG1 GMt.T12_nG1], 1, 2) > 0);
+frequency_of_change(1,3) = -(GMt_change_count / height(GMt)) * 100;
+WMt_change_count = sum(diff(-1 * [WMt.T1_nG1 WMt.T12_nG1], 1, 2) > 0);
+frequency_of_change(2,3) = -(WMt_change_count / height(WMt)) * 100;
+CSFt_change_count = sum(diff(1 * [CSFt.T1_nG1 CSFt.T12_nG1], 1, 2) > 0);
+frequency_of_change(3,3) = (CSFt_change_count / height(CSFt)) * 100;
+% With 2 Gaussians, adding the T2 image
+GMt_change_count = sum(diff(1 * [GMt.T1_nG2 GMt.T12_nG2], 1, 2) > 0);
+frequency_of_change(1,4) = (GMt_change_count / height(GMt)) * 100;
+WMt_change_count = sum(diff(-1 * [WMt.T1_nG2 WMt.T12_nG2], 1, 2) > 0);
+frequency_of_change(2,4) = -(WMt_change_count / height(WMt)) * 100;
+CSFt_change_count = sum(diff(-1 * [CSFt.T1_nG2 CSFt.T12_nG2], 1, 2) > 0);
+frequency_of_change(3,4) = -(CSFt_change_count / height(CSFt)) * 100;
+disp("Discovery set");
+disp(frequency_of_change);
 
 % % Add x-axis labels
 % XL       = get(findall(figure(1),'type','axes'), 'XLim');
