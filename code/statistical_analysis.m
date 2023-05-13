@@ -83,8 +83,8 @@ ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fo
 % look at the relationship between tissue classes using correlations, what
 % does it tell us about how changing model input or parameters changes
 % tissue class attributions
-[rd,td,pvald,rCId,alphav] = Spearman([GMd{:,:} GMd{:,:} WMd{:,:}],[WMd{:,:} CSFd{:,:} CSFd{:,:}]);
-[rt,tt,pvalt,rCIt,alphav] = Spearman([GMt{:,:} GMt{:,:} WMt{:,:}],[WMt{:,:} CSFt{:,:} CSFt{:,:}]);
+[rd,td,pvald,hbootd,rCId] = Spearman([GMd{:,:} GMd{:,:} WMd{:,:}],[WMd{:,:} CSFd{:,:} CSFd{:,:}]);
+[rt,tt,pvalt,hboott,rCIt] = Spearman([GMt{:,:} GMt{:,:} WMt{:,:}],[WMt{:,:} CSFt{:,:} CSFt{:,:}]);
 
 % results
 % -------
@@ -97,27 +97,27 @@ warning('the relationships between tissue classes are unchanged')
 figure('Name','Adding a Gaussian to T1 input'); set(gcf,'Color','w'); 
 subplot(2,3,1);
 scatter(GMd.T1_nG1,WMd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(1),(1-alphav)*100,CI(1,1),CI(2,1));
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(1),(1-alphav)*100,rCId(1,1),rCId(2,1));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,2);
 scatter(GMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(5),(1-alphav)*100,CI(1,5),CI(2,5));
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(5),(1-alphav)*100,rCId(1,5),rCId(2,5));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,3);
 scatter(WMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(9),(1-alphav)*100,CI(1,9),CI(2,9));
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(9),(1-alphav)*100,rCId(1,9),rCId(2,9));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,4);
 scatter(GMd.T1_nG2,WMd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',r(2),(1-alphav)*100,CI(1,2),CI(2,2));
+M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(2),(1-alphav)*100,rCId(1,2),rCId(2,2));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,5);
 scatter(GMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',r(6),(1-alphav)*100,CI(1,6),CI(2,6));
+M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(6),(1-alphav)*100,rCId(1,6),rCId(2,6));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,6);
 scatter(WMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',r(10),(1-alphav)*100,CI(1,10),CI(2,10));
+M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(10),(1-alphav)*100,rCId(1,10),rCId(2,10));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 
 
@@ -139,27 +139,27 @@ warning('With 1 Gaussian only, adding the T2 image decreased GM by %g ml (%g%% o
 figure('Name','Adding T2 image to the 1 Gaussian model'); set(gcf,'Color','w'); 
 subplot(2,3,1);
 scatter(GMd.T1_nG1,WMd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(1),(1-alphav)*100,CI(1,1),CI(2,1));
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(1),(1-alphav)*100,rCId(1,1),rCId(2,1));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,2);
 scatter(GMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(5),(1-alphav)*100,CI(1,5),CI(2,5));
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(5),(1-alphav)*100,rCId(1,5),rCId(2,5));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,3);
 scatter(WMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(9),(1-alphav)*100,CI(1,9),CI(2,9));
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(9),(1-alphav)*100,rCId(1,9),rCId(2,9));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,4);
 scatter(GMd.T12_nG1,WMd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(3),(1-alphav)*100,CI(1,3),CI(2,3));
+M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(3),(1-alphav)*100,rCId(1,3),rCId(2,3));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,5);
 scatter(GMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(7),(1-alphav)*100,CI(1,7),CI(2,7));
+M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(7),(1-alphav)*100,rCId(1,7),rCId(2,7));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 subplot(2,3,6);
 scatter(WMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',r(11),(1-alphav)*100,CI(1,11),CI(2,11));
+M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(11),(1-alphav)*100,rCId(1,11),rCId(2,11));
 title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 
 
