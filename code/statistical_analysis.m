@@ -180,6 +180,7 @@ disp('with some tissue missing!')
 disp('------------------')
 
 % replication set
+figure(findobj( 'Type', 'Figure', 'Name', 'Tissue volumes' ));
 subplot(3,4,3);
 [GMt_est, CIt_GM]   = rst_data_plot(GMt{:,:}, 'estimator','trimmed mean','newfig','sub');
 title('Gray Matter test set','Fontsize',12); ylabel('GM volumes'); subplot(3,4,7);
