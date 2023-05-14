@@ -5,6 +5,7 @@
 cd('../results')
 
 %% what is the total intracranial volume (TIV) for the four types of segmentation
+% -------------------------------------------------------------------------------
 GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);           
 WMd  = readtable(['NRU_dataset' filesep 'WhiteMatter_volumes.csv'],'ReadRowNames',false);           
 CSFd = readtable(['NRU_dataset' filesep 'CSF_volumes.csv'],'ReadRowNames',false);           
@@ -35,7 +36,7 @@ warning('adding 1 Gaussian increases TIV by %g and %g ml for unimodal and multim
 warning('adding a T2 image decreases TIV by %g and %g ml for 1 Gaussian and 2 Gaussians models',TIVd_diff(3),TIVd_diff(4));
 
 % replication set - test for the same differences found as above using
-% strict Bonferonni corection
+% strict Bonferonni correction
 subplot(2,2,3);
 [TIVt_est, TIVt_CI]   = rst_data_plot(TIVt, 'estimator','trimmed mean','newfig','sub');
 title('TIV test set','Fontsize',12); ylabel('volumes'); 
@@ -60,6 +61,7 @@ summary = table([TIVd_CI(1,1) TIVd_est(1) TIVd_CI(2,1); TIVt_CI(1,1) TIVt_est(1)
 disp(summary); warning('note how with 1 Gaussian distributions barely overlap')
 
 %% how are changes in TIV explained by tissue type
+% ------------------------------------------------
 
 figure('Name','Tissue volumes'); 
 subplot(3,4,1);
@@ -83,8 +85,8 @@ ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fo
 % look at the relationship between tissue classes using correlations, what
 % does it tell us about how changing model input or parameters changes
 % tissue class attributions
-[rd,td,pvald,hbootd,rCId] = Spearman([GMd{:,:} GMd{:,:} WMd{:,:}],[WMd{:,:} CSFd{:,:} CSFd{:,:}]);
-[rt,tt,pvalt,hboott,rCIt] = Spearman([GMt{:,:} GMt{:,:} WMt{:,:}],[WMt{:,:} CSFt{:,:} CSFt{:,:}]);
+[rd,td,pvald,rCId,alphav] = Spearman([GMd{:,:} GMd{:,:} WMd{:,:}],[WMd{:,:} CSFd{:,:} CSFd{:,:}]);
+[rt,tt,pvalt,rCIt,alphav] = Spearman([GMt{:,:} GMt{:,:} WMt{:,:}],[WMt{:,:} CSFt{:,:} CSFt{:,:}]);
 
 % results
 % -------
@@ -94,32 +96,6 @@ CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T1_nG2)<0)*100;
 warning('Using T1 only, adding a Gaussian decreased GM volumes by %g ml (%g%% of subjects) and increase WM by %g ml (%g%%) and CSF by %g ml (%g%%) changes in proportion (diff = %g ml)', ...
     GMd_diff(1),GMd_change_count,abs(WMd_diff(1)),WMd_change_count,abs(CSFd_diff(1)),CSFd_change_count,GMd_diff(1) - abs(WMd_diff(1)) - abs(CSFd_diff(1)))
 warning('the relationships between tissue classes are unchanged')
-figure('Name','Adding a Gaussian to T1 input'); set(gcf,'Color','w'); 
-subplot(2,3,1);
-scatter(GMd.T1_nG1,WMd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(1),(1-alphav)*100,rCId(1,1),rCId(2,1));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,2);
-scatter(GMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(5),(1-alphav)*100,rCId(1,5),rCId(2,5));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,3);
-scatter(WMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(9),(1-alphav)*100,rCId(1,9),rCId(2,9));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,4);
-scatter(GMd.T1_nG2,WMd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(2),(1-alphav)*100,rCId(1,2),rCId(2,2));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,5);
-scatter(GMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(6),(1-alphav)*100,rCId(1,6),rCId(2,6));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,6);
-scatter(WMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(10),(1-alphav)*100,rCId(1,10),rCId(2,10));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-
 
 % -------
 GMd_change_count  = mean((GMd.T12_nG1-GMd.T12_nG2)<0)*100;
@@ -127,8 +103,6 @@ WMd_change_count  = mean((WMd.T12_nG1-WMd.T12_nG2)<0)*100;
 CSFd_change_count = mean((CSFd.T12_nG1-CSFd.T12_nG2)>0)*100;
 warning('Using T1 and T2, adding a Gaussian increased GM by %g ml (%g%% of subjects) and WM by %g ml (%g%%) but decreased CSF by %g ml (%g%%) in proportion (diff = %g ml)', ...
     abs(GMd_diff(2)),GMd_change_count,abs(WMd_diff(2)),WMd_change_count,abs(CSFd_diff(2)),CSFd_change_count, abs(GMd_diff(2)) + abs(WMd_diff(2)) - abs(CSFd_diff(2)))
-figure('Name','Adding a Gaussian to T1-T2 input'); set(gcf,'Color','w'); 
-
 
 % -------
 GMd_change_count  = mean((GMd.T1_nG1-GMd.T12_nG1)>0)*100;
@@ -136,32 +110,6 @@ WMd_change_count  = mean((WMd.T1_nG1-WMd.T12_nG1)>0)*100;
 CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T12_nG1)<0)*100;
 warning('With 1 Gaussian only, adding the T2 image decreased GM by %g ml (%g%% of subjects) and WM by %g ml (%g%%) but increases CSF by %g ml (%g%%) and unproportionally (%g ml missing)', ...
     GMd_diff(3),GMd_change_count,WMd_diff(3),WMd_change_count,abs(CSFd_diff(3)),CSFd_change_count,GMd_diff(3) + WMd_diff(3) - abs(CSFd_diff(3)))
-figure('Name','Adding T2 image to the 1 Gaussian model'); set(gcf,'Color','w'); 
-subplot(2,3,1);
-scatter(GMd.T1_nG1,WMd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(1),(1-alphav)*100,rCId(1,1),rCId(2,1));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,2);
-scatter(GMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(5),(1-alphav)*100,rCId(1,5),rCId(2,5));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,3);
-scatter(WMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(9),(1-alphav)*100,rCId(1,9),rCId(2,9));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,4);
-scatter(GMd.T12_nG1,WMd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(3),(1-alphav)*100,rCId(1,3),rCId(2,3));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,5);
-scatter(GMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(7),(1-alphav)*100,rCId(1,7),rCId(2,7));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-subplot(2,3,6);
-scatter(WMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
-M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(11),(1-alphav)*100,rCId(1,11),rCId(2,11));
-title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
-
 
 % -------
 GMd_change_count  = mean((GMd.T1_nG2-GMd.T12_nG2)<0)*100;
@@ -170,6 +118,58 @@ CSFd_change_count = mean((CSFd.T1_nG2-CSFd.T12_nG2)>0)*100;
 warning('With 2 Gaussians, adding the T2 image increased GM volume by %g ml (%g%% of subjects) and decreased WM by %g ml (%g%%) and CSF by %g ml (%g%%) and unproportionally (%g ml missing)', ...
     abs(GMd_diff(4)),WMd_diff(4),CSFd_diff(4), WMd_diff(4) + CSFd_diff(4) - abs(GMd_diff(4)))
 
+figure('Name','Adding a Gaussian to T1 input'); set(gcf,'Color','w'); 
+
+subplot(4,3,1);
+scatter(GMd.T1_nG1,WMd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(1),(1-alphav)*100,rCId(1,1),rCId(2,1));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,4);
+scatter(GMd.T1_nG2,WMd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(2),(1-alphav)*100,rCId(1,2),rCId(2,2));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,7);
+scatter(GMd.T12_nG1,WMd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(3),(1-alphav)*100,rCId(1,3),rCId(2,3));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,10);
+scatter(GMd.T12_nG2,WMd.T12_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/WM T1-T2 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(4),(1-alphav)*100,rCId(1,4),rCId(2,4));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+
+subplot(4,3,2);
+scatter(GMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/CSF T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(5),(1-alphav)*100,rCId(1,5),rCId(2,5));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,5);
+scatter(GMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/CSF T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(6),(1-alphav)*100,rCId(1,6),rCId(2,6));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,8);
+scatter(GMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/CSF T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(7),(1-alphav)*100,rCId(1,7),rCId(2,7));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,11);
+scatter(GMd.T12_nG2,CSFd.T12_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('GM/CSF T1-T2 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(8),(1-alphav)*100,rCId(1,8),rCId(2,8));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+
+subplot(4,3,3);
+scatter(WMd.T1_nG1,CSFd.T1_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('WM/CSF T1 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(9),(1-alphav)*100,rCId(1,9),rCId(2,9));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,6);
+scatter(WMd.T1_nG2,CSFd.T1_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('WM/CSF T1 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(10),(1-alphav)*100,rCId(1,10),rCId(2,10));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,9);
+scatter(WMd.T12_nG1,CSFd.T12_nG1,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('WM/CSF T1-T2 nG1 r=%g \n %g%%CI [%.2f %.2f]',rd(11),(1-alphav)*100,rCId(1,11),rCId(2,11));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
+subplot(4,3,12);
+scatter(WMd.T12_nG2,CSFd.T12_nG2,100,'filled'); grid on; box on; xlabel('X','FontSize',10); ylabel('Y','FontSize',10);
+M = sprintf('WM/CSF T1-T2 nG2 r=%g \n %g%%CI [%.2f %.2f]',rd(12),(1-alphav)*100,rCId(1,12),rCId(2,12));
+title(M,'FontSize',12); h=lsline; set(h,'Color','r','LineWidth',4);
 
 disp('------------------')
 disp('the proportional changes in tissue volumes adding a Gaussian while')
@@ -178,9 +178,6 @@ disp('distribution fitting (mixture) - the unproportional changes in tisue volum
 disp('and dispruption of correlations indicates a change in tissue class belonging')
 disp('with some tissue missing!')
 disp('------------------')
-
-
-
 
 % replication set
 subplot(3,4,3);
@@ -222,9 +219,13 @@ warning('With 1 Gaussian only, adding the T2 image decreased volumes for all 3 t
 warning('With 2 Gaussians, adding the T2 image increased GM (%g ml) and WM (%g ml) volumes but decreased CSF (%g ml) volumes but unproportionally (%g ml missing)', ...
     abs(GMt_diff(4)),abs(WMt_diff(4)),CSFt_diff(4), CSFt_diff(4) - abs(GMt_diff(4)) - abs(WMt_diff(4)))
 
+%% How much of the missing volumes are now vessels? 
+% export csv for vessel distribution in the main script analyze here
 
-% export csv for vessel disptribution, entropy and dunn in the main script
-% analyze here
+
+
+%% What does this all mean in terms of similarlity/differences among tissues
+% export csv entropy and dunn in the main script analyze here
 
 
 
