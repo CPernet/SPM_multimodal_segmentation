@@ -116,7 +116,7 @@ GMd_change_count  = mean((GMd.T1_nG2-GMd.T12_nG2)<0)*100;
 WMd_change_count  = mean((WMd.T1_nG2-WMd.T12_nG2)>0)*100;
 CSFd_change_count = mean((CSFd.T1_nG2-CSFd.T12_nG2)>0)*100;
 warning('With 2 Gaussians, adding the T2 image increased GM volume by %g ml (%g%% of subjects) and decreased WM by %g ml (%g%%) and CSF by %g ml (%g%%) and unproportionally (%g ml missing)', ...
-    abs(GMd_diff(4)),WMd_diff(4),CSFd_diff(4), WMd_diff(4) + CSFd_diff(4) - abs(GMd_diff(4)))
+    abs(GMd_diff(4)),GMd_change_count,WMd_diff(4),WMd_change_count,abs(CSFd_diff(4)),CSFd_change_count, WMd_diff(4) + CSFd_diff(4) - abs(GMd_diff(4)))
 
 figure('Name','Adding a Gaussian to T1 input'); set(gcf,'Color','w'); 
 
@@ -220,15 +220,114 @@ warning('With 1 Gaussian only, adding the T2 image decreased volumes for all 3 t
 warning('With 2 Gaussians, adding the T2 image increased GM (%g ml) and WM (%g ml) volumes but decreased CSF (%g ml) volumes but unproportionally (%g ml missing)', ...
     abs(GMt_diff(4)),abs(WMt_diff(4)),CSFt_diff(4), CSFt_diff(4) - abs(GMt_diff(4)) - abs(WMt_diff(4)))
 
+clearvars
 %% How much of the missing volumes are now vessels? 
 % export csv for vessel distribution in the main script analyze here
 
 
 
 %% What does this all mean in terms of similarlity/differences among tissues
-% export csv entropy and dunn in the main script analyze here
+% Dunn index
+GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_DunnIndexes.csv'],'ReadRowNames',false);           
+WMd  = readtable(['NRU_dataset' filesep 'WhiteMatter_DunnIndexes.csv'],'ReadRowNames',false);           
+CSFd = readtable(['NRU_dataset' filesep 'CSF_DunnIndexes.csv'],'ReadRowNames',false);           
+
+GMt  = readtable(['ds003653' filesep 'GrayMatter_DunnIndexes.csv'],'ReadRowNames',false);           
+WMt  = readtable(['ds003653' filesep 'WhiteMatter_DunnIndexes.csv'],'ReadRowNames',false);           
+CSFt = readtable(['ds003653' filesep 'CSF_DunnIndexes.csv'],'ReadRowNames',false);           
 
 
+
+
+% entropy
+GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_entropy.csv'],'ReadRowNames',false);           
+WMd  = readtable(['NRU_dataset' filesep 'WhiteMatter_entropy.csv'],'ReadRowNames',false);           
+CSFd = readtable(['NRU_dataset' filesep 'CSF_entropy.csv'],'ReadRowNames',false);           
+
+GMt  = readtable(['ds003653' filesep 'GrayMatter_entropy.csv'],'ReadRowNames',false);           
+WMt  = readtable(['ds003653' filesep 'WhiteMatter_entropy.csv'],'ReadRowNames',false);           
+CSFt = readtable(['ds003653' filesep 'CSF_entropy.csv'],'ReadRowNames',false);   
+
+figure('Name','Tissue Entropy'); 
+subplot(3,4,1);
+[GMd_est, CId_GM]   = rst_data_plot(GMd{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('Gray Matter discovery set','Fontsize',12); ylabel('GM Entropy'); subplot(3,4,5);
+[WMd_est, CId_WM]   = rst_data_plot(WMd{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('White Matter discovery set','Fontsize',12); ylabel('WM Entropy'); subplot(3,4,9);
+[CSFd_est, CId_CSF] = rst_data_plot(CSFd{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('CSF discovery set','Fontsize',12); ylabel('CSF Entropy');
+ 
+TrimmedMeans = [GMd_est; WMd_est; CSFd_est];
+LowerConfs   = [CId_GM(1,:); CId_WM(1,:); CId_CSF(1,:)];
+HigherConfs  = [CId_GM(2,:); CId_WM(2,:); CId_CSF(2,:)];
+
+T1_nG1  = [LowerConfs(:,1) TrimmedMeans(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
+
+disp('-------------------------')
+disp('     Discovery set')
+DI_table = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
+ 'RowNames',{'GM','WM','CSF'});
+disp(DI_table)
+disp('-------------------------')
+
+subplot(3,4,2);
+[GMd_diff,GMd_dCI,GMd_p,GMd_alphav,h1] = rst_multicompare(GMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+subplot(3,4,6);
+[WMd_diff,WMd_dCI,WMd_p,WMd_alphav,h2] = rst_multicompare(WMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+subplot(3,4,10);
+[CSFd_diff,CSFd_dCI,CSFd_p,CSFd_alphav,h3] = rst_multicompare(CSFd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+
+% replication set
+subplot(3,4,3);
+[GMt_est, CIt_GM]   = rst_data_plot(GMt{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('Gray Matter test set','Fontsize',12); ylabel('GM volumes'); subplot(3,4,7);
+[WMt_est, CIt_WM]   = rst_data_plot(WMt{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('White Matter test set','Fontsize',12); ylabel('WM volumes'); subplot(3,4,11);
+[CSFt_est, CIt_CSF] = rst_data_plot(CSFt{:,:}, 'estimator','trimmed mean','newfig','sub');
+title('CSF test set','Fontsize',12); ylabel('CSF volumes');
+
+TrimmedMeans = [GMt_est; WMt_est; CSFt_est];
+LowerConfs   = [CIt_GM(1,:); CIt_WM(1,:); CIt_CSF(1,:)];
+HigherConfs  = [CIt_GM(2,:); CIt_WM(2,:); CIt_CSF(2,:)];
+
+T1_nG1  = [LowerConfs(:,1) TrimmedMeans(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
+
+disp('-------------------------')
+disp('     Replication set')
+DI_table = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
+ 'RowNames',{'GM','WM','CSF'});
+disp(DI_table)
+disp('-------------------------')
+
+subplot(3,4,4);
+Data = [GMt{:,1}-GMt{:,2}, GMt{:,3}-GMt{:,4},...
+    GMt{:,1}-GMt{:,3},GMt{:,2}-GMt{:,4}];
+[h1,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+GMt_diff = rst_trimmean(Data);
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+subplot(3,4,8);
+Data = [WMt{:,1}-WMt{:,2}, WMt{:,3}-WMt{:,4},...
+    WMt{:,1}-WMt{:,3},WMt{:,2}-WMt{:,4}];
+[h2,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+WMt_diff = rst_trimmean(Data);
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+subplot(3,4,12);
+Data = [CSFt{:,1}-CSFt{:,2}, CSFt{:,3}-CSFt{:,4},...
+    CSFt{:,1}-CSFt{:,3},CSFt{:,2}-CSFt{:,4}];
+[h3,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+CSFt_diff = rst_trimmean(Data);
+ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+
+clearvars
 
 % Display the correlation matrices for each condition
 % summery_corrd = table(table(d_correlation_matric(:,1,1), d_correlation_matric(:,2,1), d_correlation_matric(:,3,1),'VariableNames',{'GM', 'WM', 'CSF'}), ...
