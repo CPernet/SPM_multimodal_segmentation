@@ -236,8 +236,91 @@ GMt  = readtable(['ds003653' filesep 'GrayMatter_DunnIndexes.csv'],'ReadRowNames
 WMt  = readtable(['ds003653' filesep 'WhiteMatter_DunnIndexes.csv'],'ReadRowNames',false);           
 CSFt = readtable(['ds003653' filesep 'CSF_DunnIndexes.csv'],'ReadRowNames',false);           
 
+[GMd_est, CId_GM]   = rst_trimmean(GMd{:,:});
+[WMd_est, CId_WM]   = rst_trimmean(WMd{:,:});
+[CSFd_est, CId_CSF] = rst_trimmean(CSFd{:,:});
+ 
+TrimmedMeans = [GMd_est; WMd_est; CSFd_est];
+LowerConfs   = [CId_GM(1,:); CId_WM(1,:); CId_CSF(1,:)];
+HigherConfs  = [CId_GM(2,:); CId_WM(2,:); CId_CSF(2,:)];
 
+T1_nG1  = [LowerConfs(:,1) TrimmedMeans(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
 
+DI_TM_table = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
+ 'RowNames',{'GM','WM','CSF'});
+
+figure('Name','Dunn Index Trimmed mean'); subplot(3,2,1);
+[GMd_diff,GMd_dCI,GMd_p,GMd_alphav,h1] = rst_multicompare(GMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('Dunn Index differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('');  subplot(3,2,3);
+[WMd_diff,WMd_dCI,WMd_p,WMd_alphav,h2] = rst_multicompare(WMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('Dunn Index differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('');  subplot(3,2,5);
+[CSFd_diff,CSFd_dCI,CSFd_p,CSFd_alphav,h3] = rst_multicompare(CSFd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
+ylabel('Dunn Index differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+
+GMd_table = table(GMd_dCI(:,:)',GMd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+WMd_table = table(WMd_dCI(:,:)',WMd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+CSFd_table = table(CSFd_dCI(:,:)',CSFd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+
+disp('-------------------------')
+disp('     Discovery set')
+disp(DI_TM_table)
+disp(GMd_table)
+disp(WMd_table)
+disp(CSFd_table)
+disp('-------------------------')
+
+% replication set
+[GMt_est, CIt_GM]   = rst_trimmean(GMt{:,:});
+[WMt_est, CIt_WM]   = rst_trimmean(WMt{:,:});
+[CSFt_est, CIt_CSF] = rst_trimmean(CSFt{:,:});
+ 
+TrimmedMeans = [GMt_est; WMt_est; CSFt_est];
+LowerConfs   = [CIt_GM(1,:); CIt_WM(1,:); CIt_CSF(1,:)];
+HigherConfs  = [CIt_GM(2,:); CIt_WM(2,:); CIt_CSF(2,:)];
+
+T1_nG1  = [LowerConfs(:,1) TrimmedMeans(:,1) HigherConfs(:,1)];
+T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
+T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
+T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
+
+DI_table = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
+ 'RowNames',{'GM','WM','CSF'});
+
+subplot(3,2,2);
+Data = [GMt{:,1}-GMt{:,2}, GMt{:,3}-GMt{:,4},...
+    GMt{:,1}-GMt{:,3},GMt{:,2}-GMt{:,4}];
+[h1,GMt_CI,GMt_p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+GMt_diff = rst_trimmean(Data);
+ylabel('Dunn Index differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+subplot(3,2,4);
+Data = [WMt{:,1}-WMt{:,2}, WMt{:,3}-WMt{:,4},...
+    WMt{:,1}-WMt{:,3},WMt{:,2}-WMt{:,4}];
+[h2,WMt_CI,WMt_p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+WMt_diff = rst_trimmean(Data);
+ylabel('Dunn Index differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+subplot(3,2,6);
+Data = [CSFt{:,1}-CSFt{:,2}, CSFt{:,3}-CSFt{:,4},...
+    CSFt{:,1}-CSFt{:,3},CSFt{:,2}-CSFt{:,4}];
+[h3,CSFt_CI,CSFt_p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+CSFt_diff = rst_trimmean(Data);
+ylabel('Dunn Index differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+
+GMt_table = table(GMt_CI(:,:)',GMt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+WMt_table = table(WMt_CI(:,:)',WMt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+CSFt_table = table(CSFt_CI(:,:)',CSFt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+
+disp('-------------------------')
+disp('     Replication set')
+disp(DI_table)
+disp(GMt_table)
+disp(WMt_table)
+disp(CSFt_table)
+disp('-------------------------')
+
+clearvars
 
 % entropy
 GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_entropy.csv'],'ReadRowNames',false);           
@@ -266,22 +349,30 @@ T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
 T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
 T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
 
-disp('-------------------------')
-disp('     Discovery set')
 DI_table = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
  'RowNames',{'GM','WM','CSF'});
-disp(DI_table)
-disp('-------------------------')
 
 subplot(3,4,2);
 [GMd_diff,GMd_dCI,GMd_p,GMd_alphav,h1] = rst_multicompare(GMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+ylabel('Entropy differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
 subplot(3,4,6);
 [WMd_diff,WMd_dCI,WMd_p,WMd_alphav,h2] = rst_multicompare(WMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+ylabel('Entropy differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
 subplot(3,4,10);
 [CSFd_diff,CSFd_dCI,CSFd_p,CSFd_alphav,h3] = rst_multicompare(CSFd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+ylabel('Entropy differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+
+GMd_table = table(GMd_dCI(:,:)',GMd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+WMd_table = table(WMd_dCI(:,:)',WMd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+CSFd_table = table(CSFd_dCI(:,:)',CSFd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+
+disp('-------------------------')
+disp('     Discovery set')
+disp(DI_table)
+disp(GMd_table)
+disp(WMd_table)
+disp(CSFd_table)
+disp('-------------------------')
 
 % replication set
 subplot(3,4,3);
@@ -301,31 +392,39 @@ T1_nG2  = [LowerConfs(:,2) TrimmedMeans(:,2) HigherConfs(:,2)];
 T12_nG1 = [LowerConfs(:,3) TrimmedMeans(:,3) HigherConfs(:,3)];
 T12_nG2 = [LowerConfs(:,4) TrimmedMeans(:,4) HigherConfs(:,4)];
 
-disp('-------------------------')
-disp('     Replication set')
 DI_table = table(T1_nG1,T1_nG2,T12_nG1,T12_nG2,...
  'RowNames',{'GM','WM','CSF'});
-disp(DI_table)
-disp('-------------------------')
 
 subplot(3,4,4);
 Data = [GMt{:,1}-GMt{:,2}, GMt{:,3}-GMt{:,4},...
     GMt{:,1}-GMt{:,3},GMt{:,2}-GMt{:,4}];
-[h1,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+[h1,GMt_dCI,GMt_p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
 GMt_diff = rst_trimmean(Data);
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+ylabel('Entropy differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
 subplot(3,4,8);
 Data = [WMt{:,1}-WMt{:,2}, WMt{:,3}-WMt{:,4},...
     WMt{:,1}-WMt{:,3},WMt{:,2}-WMt{:,4}];
-[h2,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+[h2,WMt_dCI,WMt_p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
 WMt_diff = rst_trimmean(Data);
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+ylabel('Entropy differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
 subplot(3,4,12);
 Data = [CSFt{:,1}-CSFt{:,2}, CSFt{:,3}-CSFt{:,4},...
     CSFt{:,1}-CSFt{:,3},CSFt{:,2}-CSFt{:,4}];
-[h3,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
+[h3,CSFt_dCI,CSFt_p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
 CSFt_diff = rst_trimmean(Data);
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+ylabel('Entropy differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+
+GMt_table = table(GMt_dCI(:,:)',GMt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+WMt_table = table(WMt_dCI(:,:)',WMt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+CSFt_table = table(CSFt_dCI(:,:)',CSFt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
+
+disp('-------------------------')
+disp('     Replication set')
+disp(DI_table)
+disp(GMt_table)
+disp(WMt_table)
+disp(CSFt_table)
+disp('-------------------------')
 
 clearvars
 
