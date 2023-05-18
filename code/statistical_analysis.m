@@ -277,13 +277,48 @@ GMd_table = table(GMd_dCI(:,:)',GMd_p','VariableNames',{'CI','p-value'},'RowName
 WMd_table = table(WMd_dCI(:,:)',WMd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
 CSFd_table = table(CSFd_dCI(:,:)',CSFd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
 
+disp("Dunn Index")
 disp('-------------------------')
 disp('     Discovery set')
+
+GMd_change_count  = mean((GMd.T1_nG1-GMd.T1_nG2)==0)*100;
+WMd_change_count  = mean((WMd.T1_nG1-WMd.T1_nG2)==0)*100;
+CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T1_nG2)==0)*100;
+warning("Using T1 only, adding a Gaussian do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)", ...
+    GMd_change_count,WMd_change_count,CSFd_change_count)
+
+% -------
+GMd_change_count  = mean((GMd.T12_nG1-GMd.T12_nG2)==0)*100;
+WMd_change_count  = mean((WMd.T12_nG1-WMd.T12_nG2)==0)*100;
+CSFd_change_count = mean((CSFd.T12_nG1-CSFd.T12_nG2)==0)*100;
+warning('Using T1 and T2, adding a Gaussian do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)', ...
+    GMd_change_count,WMd_change_count,CSFd_change_count)
+
+% -------
+GMd_change_count  = mean((GMd.T1_nG1-GMd.T12_nG1)==0)*100;
+WMd_change_count  = mean((WMd.T1_nG1-WMd.T12_nG1)==0)*100;
+CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T12_nG1)==0)*100;
+warning('With 1 Gaussian only, adding the T2 image do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)', ...
+    GMd_change_count,WMd_change_count,CSFd_change_count)
+
+% -------
+GMd_change_count  = mean((GMd.T1_nG2-GMd.T12_nG2)==0)*100;
+WMd_change_count  = mean((WMd.T1_nG2-WMd.T12_nG2)==0)*100;
+CSFd_change_count = mean((CSFd.T1_nG2-CSFd.T12_nG2)==0)*100;
+warning('With 2 Gaussians, adding the T2 image do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)', ...
+    GMd_change_count,WMd_change_count,CSFd_change_count)
+
 disp(DI_TM_table)
 disp(GMd_table)
 disp(WMd_table)
 disp(CSFd_table)
-disp('-------------------------')
+
+disp("--------")
+disp("There are not any evidence for")
+disp("the conditions changing the Dunn Index")
+disp("This tell that the tissues dont drastic changes the ranges")
+disp("between the different conditions")
+disp("--------")
 
 % replication set
 [GMt_est, CIt_GM]   = rst_trimmean(GMt{:,:});
@@ -327,15 +362,46 @@ CSFt_table = table(CSFt_CI(:,:)',CSFt_p','VariableNames',{'CI','p-value'},'RowNa
 
 disp('-------------------------')
 disp('     Replication set')
+
+GMt_change_count  = mean((GMt.T1_nG1-GMt.T1_nG2)==0)*100;
+WMt_change_count  = mean((WMt.T1_nG1-WMt.T1_nG2)==0)*100;
+CSFt_change_count = mean((CSFt.T1_nG1-CSFt.T1_nG2)==0)*100;
+warning("Using T1 only, adding a Gaussian do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)", ...
+    GMt_change_count,WMt_change_count,CSFt_change_count)
+
+% -------
+GMt_change_count  = mean((GMt.T12_nG1-GMt.T12_nG2)==0)*100;
+WMt_change_count  = mean((WMt.T12_nG1-WMt.T12_nG2)==0)*100;
+CSFt_change_count = mean((CSFt.T12_nG1-CSFt.T12_nG2)==0)*100;
+warning('Using T1 and T2, adding a Gaussian do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)', ...
+    GMt_change_count,WMt_change_count,CSFt_change_count)
+
+% -------
+GMt_change_count  = mean((GMt.T1_nG1-GMt.T12_nG1)==0)*100;
+WMt_change_count  = mean((WMt.T1_nG1-WMt.T12_nG1)==0)*100;
+CSFt_change_count = mean((CSFt.T1_nG1-CSFt.T12_nG1)==0)*100;
+warning('With 1 Gaussian only, adding the T2 image do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)', ...
+    GMt_change_count,WMt_change_count,CSFt_change_count)
+
+% -------
+GMt_change_count  = mean((GMt.T1_nG2-GMt.T12_nG2)==0)*100;
+WMt_change_count  = mean((WMt.T1_nG2-WMt.T12_nG2)==0)*100;
+CSFt_change_count = mean((CSFt.T1_nG2-CSFt.T12_nG2)==0)*100;
+warning('With 2 Gaussians, adding the T2 image do not change GM Dunn Index (%g%% of subjects) and WM Dunn Index (%g%%) and CSF Dunn Index (%g%%)', ...
+    GMt_change_count,WMt_change_count,CSFt_change_count)
+
 disp(DI_table)
 disp(GMt_table)
 disp(WMt_table)
 disp(CSFt_table)
+disp("--------")
+disp("Replication set confirmes the findings in the discovery set")
+disp("--------")
 disp('-------------------------')
 
 clearvars
 
-% entropy
+% Entropy
 GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_entropy.csv'],'ReadRowNames',false);           
 WMd  = readtable(['NRU_dataset' filesep 'WhiteMatter_entropy.csv'],'ReadRowNames',false);           
 CSFd = readtable(['NRU_dataset' filesep 'CSF_entropy.csv'],'ReadRowNames',false);           
@@ -381,11 +447,45 @@ CSFd_table = table(CSFd_dCI(:,:)',CSFd_p','VariableNames',{'CI','p-value'},'RowN
 
 disp('-------------------------')
 disp('     Discovery set')
+
+GMd_change_count  = mean((GMd.T1_nG1-GMd.T1_nG2)<0)*100;
+WMd_change_count  = mean((WMd.T1_nG1-WMd.T1_nG2)>0)*100;
+CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T1_nG2)<0)*100;
+warning("Using T1 only, adding a Gaussian increased GM entropy by %g (%g%% of subjects) and decreased WM entropy by %g (%g%%) and CSF entropy by %g (%g%%) (%g decreased)", ...
+    abs(GMd_diff(1)),GMd_change_count,abs(WMd_diff(1)),WMd_change_count,abs(CSFd_diff(1)),CSFd_change_count,abs(GMd_diff(1) - WMd_diff(1) + CSFd_diff(1)))
+
+% -------
+GMd_change_count  = mean((GMd.T12_nG1-GMd.T12_nG2)>0)*100;
+WMd_change_count  = mean((WMd.T12_nG1-WMd.T12_nG2)>0)*100;
+CSFd_change_count = mean((CSFd.T12_nG1-CSFd.T12_nG2)>0)*100;
+warning('Using T1 and T2, adding a Gaussian decreased GM entropy by %g (%g%% of subjects) and WM entropy by %g (%g%%) and increased CSF entropy by %g (%g%%) (%g increased)', ...
+    abs(GMd_diff(2)),GMd_change_count,abs(WMd_diff(2)),WMd_change_count,abs(CSFd_diff(2)),CSFd_change_count,GMd_diff(2) + WMd_diff(2) - CSFd_diff(2))
+
+% -------
+GMd_change_count  = mean((GMd.T1_nG1-GMd.T12_nG1)>0)*100;
+WMd_change_count  = mean((WMd.T1_nG1-WMd.T12_nG1)>0)*100;
+CSFd_change_count = mean((CSFd.T1_nG1-CSFd.T12_nG1)<0)*100;
+warning('With 1 Gaussian only, adding the T2 image decreased GM entropy by %g (%g%% of subjects) and WM entropy by %g (%g%%) and increased CSF entropy by %g (%g%%) (%g increased)', ...
+    abs(GMd_diff(3)),GMd_change_count,abs(WMd_diff(3)),WMd_change_count,abs(CSFd_diff(3)),CSFd_change_count,GMd_diff(3) + WMd_diff(3) - CSFd_diff(3))
+
+% -------
+GMd_change_count  = mean((GMd.T1_nG2-GMd.T12_nG2)>0)*100;
+WMd_change_count  = mean((WMd.T1_nG2-WMd.T12_nG2)>0)*100;
+CSFd_change_count = mean((CSFd.T1_nG2-CSFd.T12_nG2)>0)*100;
+warning('With 2 Gaussians, adding the T2 image decreased GM entropy by %g (%g%% of subjects) and WM entropy by %g (%g%%) and CSF entropy by %g (%g%%) (%g increased)', ...
+    abs(GMd_diff(3)),GMd_change_count,abs(WMd_diff(3)),WMd_change_count,abs(CSFd_diff(3)),CSFd_change_count,GMd_diff(3) + WMd_diff(3) - CSFd_diff(3))
+
 disp(DI_table)
 disp(GMd_table)
 disp(WMd_table)
 disp(CSFd_table)
-disp('-------------------------')
+disp("--------")
+disp("Only when using T1 and adding a second Gaussian")
+disp("decreased entropy.")
+disp("This shows that by adding T2 images increased the entropy,")
+disp("which means that the tissue's voxel probabilities")
+disp("are distributed across a wider range of values")
+disp("--------")
 
 % replication set
 subplot(3,4,3);
@@ -433,10 +533,42 @@ CSFt_table = table(CSFt_dCI(:,:)',CSFt_p','VariableNames',{'CI','p-value'},'RowN
 
 disp('-------------------------')
 disp('     Replication set')
+
+GMt_change_count  = mean((GMt.T1_nG1-GMt.T1_nG2)<0)*100;
+WMt_change_count  = mean((WMt.T1_nG1-WMt.T1_nG2)>0)*100;
+CSFt_change_count = mean((CSFt.T1_nG1-CSFt.T1_nG2)<0)*100;
+warning("Using T1 only, adding a Gaussian increased GM entropy by %g (%g%% of subjects) and decreased WM entropy by %g (%g%%), but do not show evidence for changing CSF entropy (%g increased)", ...
+    abs(GMt_diff(1)),GMt_change_count,abs(WMt_diff(1)),WMt_change_count,GMt_diff(1)+WMt_diff(1))
+
+% -------
+GMt_change_count  = mean((GMt.T12_nG1-GMt.T12_nG2)>0)*100;
+WMt_change_count  = mean((WMt.T12_nG1-WMt.T12_nG2)>0)*100;
+CSFt_change_count = mean((CSFt.T12_nG1-CSFt.T12_nG2)>0)*100;
+warning('Using T1 and T2, adding a Gaussian decreased GM entropy by %g (%g%% of subjects) and WM entropy by %g (%g%%) and CSF entropy by %g (%g%%) (%g decreased)', ...
+    abs(GMt_diff(2)),GMt_change_count,abs(WMt_diff(2)),WMt_change_count,abs(CSFt_diff(2)),CSFt_change_count,GMt_diff(2)+WMt_diff(2)+CSFt_diff(2))
+
+% -------
+GMt_change_count  = mean((GMt.T1_nG1-GMt.T12_nG1)==0)*100;
+WMt_change_count  = mean((WMt.T1_nG1-WMt.T12_nG1)<0)*100;
+CSFt_change_count = mean((CSFt.T1_nG1-CSFt.T12_nG1)>0)*100;
+warning('With 1 Gaussian only, adding the T2 image do not show evidence for changing GM entropy and increased WM entropy by %g (%g%%) and decreased CSF entropy by %g (%g%%) (%g decreased)', ...
+    abs(WMt_diff(3)),WMt_change_count,abs(CSFt_diff(3)),CSFt_change_count,abs(WMt_diff(3)-CSFt_diff(3)))
+
+% -------
+GMt_change_count  = mean((GMt.T1_nG2-GMt.T12_nG2)>0)*100;
+WMt_change_count  = mean((WMt.T1_nG2-WMt.T12_nG2)>0)*100;
+CSFt_change_count = mean((CSFt.T1_nG2-CSFt.T12_nG2)>0)*100;
+warning('With 2 Gaussians, adding the T2 image decreased GM entropy by %g (%g%% of subjects) and WM entropy by %g (%g%%) and CSF entropy by %g (%g%%) (%g decreased)', ...
+    abs(GMt_diff(4)),GMt_change_count,abs(WMt_diff(4)),WMt_change_count,abs(CSFt_diff(4)),CSFt_change_count,GMt_diff(4)+WMt_diff(4)+CSFt_diff(4))
+
 disp(DI_table)
 disp(GMt_table)
 disp(WMt_table)
 disp(CSFt_table)
+disp("--------")
+disp("The test set could not replicate the findings of discovery set")
+disp("The test set shows the opposite")
+disp("--------")
 disp('-------------------------')
 
 clearvars
