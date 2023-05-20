@@ -445,6 +445,7 @@ GMd_table = table(GMd_dCI(:,:)',GMd_p','VariableNames',{'CI','p-value'},'RowName
 WMd_table = table(WMd_dCI(:,:)',WMd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
 CSFd_table = table(CSFd_dCI(:,:)',CSFd_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
 
+disp("Entropy")
 disp('-------------------------')
 disp('     Discovery set')
 
@@ -577,68 +578,113 @@ clearvars
 %% How much of the missing volumes are now vessels? 
 % we investigated where missing volumes are located, thus focusing analyses
 % on comparing modality changes only (ie T1w vs, T1w and T2w image inputs in 
-% the 1Gaussian and in the 2 Gaussians models)
+% the 1 Gaussian and in the 2 Gaussians models)
 % -------------------------------------------------------------------------
 
-GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_vessels.csv'],'ReadRowNames',false);           
+GMd  = readtable(['NRU_dataset' filesep 'GrayMatter_vessels.csv'],'ReadRowNames',false);  % High probability of gray matter in vessels, but low probability for vessels     
 WMd  = readtable(['NRU_dataset' filesep 'WhiteMatter_vessels.csv'],'ReadRowNames',false);           
-CSFd = readtable(['NRU_dataset' filesep 'CSF_vessels.csv'],'ReadRowNames',false);           
+CSFd = readtable(['NRU_dataset' filesep 'CSF_vessels.csv'],'ReadRowNames',false);   
+notGMd  = readtable(['NRU_dataset' filesep 'Not_GrayMatter_vessels.csv'],'ReadRowNames',false);  % Low probability of gray matter in vessels, but high probability for vessels         
+notWMd  = readtable(['NRU_dataset' filesep 'Not_WhiteMatter_vessels.csv'],'ReadRowNames',false);           
+notCSFd = readtable(['NRU_dataset' filesep 'Not_CSF_vessels.csv'],'ReadRowNames',false);   
 
 GMt  = readtable(['ds003653' filesep 'GrayMatter_vessels.csv'],'ReadRowNames',false);           
 WMt  = readtable(['ds003653' filesep 'WhiteMatter_vessels.csv'],'ReadRowNames',false);           
-CSFt = readtable(['ds003653' filesep 'CSF_vessels.csv'],'ReadRowNames',false);        
+CSFt = readtable(['ds003653' filesep 'CSF_vessels.csv'],'ReadRowNames',false);
+notGMt  = readtable(['ds003653' filesep 'Not_GrayMatter_vessels.csv'],'ReadRowNames',false);           
+notWMt  = readtable(['ds003653' filesep 'Not_WhiteMatter_vessels.csv'],'ReadRowNames',false);           
+notCSFt = readtable(['ds003653' filesep 'Not_CSF_vessels.csv'],'ReadRowNames',false);
 
 % Discovery set
-figure('Name','Tissue vessels'); 
+figure('Name','Vessels Probability Boxplot'); 
 subplot(3,4,1);
-[GMd_est, CId_GM]   = rst_data_plot(GMd{:,:}, 'estimator','trimmed mean','newfig','sub');
-title('Gray Matter discovery set','Fontsize',12); ylabel('GM volumes'); subplot(3,4,5);
-[WMd_est, CId_WM]   = rst_data_plot(WMd{:,:}, 'estimator','trimmed mean','newfig','sub');
-title('White Matter discovery set','Fontsize',12); ylabel('WM volumes'); subplot(3,4,9);
-[CSFd_est, CId_CSF] = rst_data_plot(CSFd{:,:}, 'estimator','trimmed mean','newfig','sub');
-title('CSF discovery set','Fontsize',12); ylabel('CSF volumes');
+boxchart(table2array(GMd))
+hold on
+plot(mean(table2array(GMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+title('Gray Matter discovery set','Fontsize',12); ylabel('Probability'); subplot(3,4,5);
+boxchart(table2array(WMd))
+hold on
+plot(mean(table2array(WMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+title('White Matter discovery set','Fontsize',12); ylabel('Probability'); subplot(3,4,9);
+boxchart(table2array(CSFd))
+hold on
+plot(mean(table2array(CSFd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+title('CSF discovery set','Fontsize',12); ylabel('Probability');
 
 subplot(3,4,2);
-[GMd_diff,GMd_dCI,GMd_p,GMd_alphav,h1] = rst_multicompare(GMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+boxchart(table2array(notGMd))
+hold on
+plot(mean(table2array(notGMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+ylabel('Probability','Fontsize',10); title('Not Gray Matter discovery set','Fontsize',12);
 subplot(3,4,6);
-[WMd_diff,WMd_dCI,WMd_p,WMd_alphav,h2] = rst_multicompare(WMd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+boxchart(table2array(notWMd))
+hold on
+plot(mean(table2array(notWMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+ylabel('Probability','Fontsize',10); title('Not White Matter discovery set','Fontsize',12);
 subplot(3,4,10);
-[CSFd_diff,CSFd_dCI,CSFd_p,CSFd_alphav,h3] = rst_multicompare(CSFd{:,:},[1 2; 3 4; 1 3; 2 4], 'estimator', 'trimmed mean','newfig','sub');
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12); xlabel('')
+boxchart(table2array(notCSFd))
+hold on
+plot(mean(table2array(notCSFd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+ylabel('Probability','Fontsize',10); title('Not CSF discovery set','Fontsize',12);
+
 
 % replication set
-figure(findobj( 'Type', 'Figure', 'Name', 'Tissue vessels' ));
+figure(findobj( 'Type', 'Figure', 'Name', 'Vessels Probability Boxplot' ));
 subplot(3,4,3);
-[GMt_est, CIt_GM]   = rst_data_plot(GMt{:,:}, 'estimator','trimmed mean','newfig','sub');
-title('Gray Matter test set','Fontsize',12); ylabel('GM volumes'); subplot(3,4,7);
-[WMt_est, CIt_WM]   = rst_data_plot(WMt{:,:}, 'estimator','trimmed mean','newfig','sub');
-title('White Matter test set','Fontsize',12); ylabel('WM volumes'); subplot(3,4,11);
-[CSFt_est, CIt_CSF] = rst_data_plot(CSFt{:,:}, 'estimator','trimmed mean','newfig','sub');
-title('CSF test set','Fontsize',12); ylabel('CSF volumes');
+boxchart(table2array(GMd))
+hold on
+plot(mean(table2array(GMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+title('Gray Matter test set','Fontsize',12); ylabel('Probability'); subplot(3,4,7);
+boxchart(table2array(WMd))
+hold on
+plot(mean(table2array(WMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+title('White Matter test set','Fontsize',12); ylabel('Probability'); subplot(3,4,11);
+boxchart(table2array(CSFd))
+hold on
+plot(mean(table2array(CSFd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+title('CSF test set','Fontsize',12); ylabel('Probability');
 
 subplot(3,4,4);
-Data = [GMt{:,1}-GMt{:,2}, GMt{:,3}-GMt{:,4},...
-    GMt{:,1}-GMt{:,3},GMt{:,2}-GMt{:,4}];
-[h1,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
-GMt_diff = rst_trimmean(Data);
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+boxchart(table2array(notGMd))
+hold on
+plot(mean(table2array(notGMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+ylabel('Probability','Fontsize',10); title('Not Gray Matter test set','Fontsize',12);
 subplot(3,4,8);
-Data = [WMt{:,1}-WMt{:,2}, WMt{:,3}-WMt{:,4},...
-    WMt{:,1}-WMt{:,3},WMt{:,2}-WMt{:,4}];
-[h2,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
-WMt_diff = rst_trimmean(Data);
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+boxchart(table2array(notWMd))
+hold on
+plot(mean(table2array(notWMd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+ylabel('Probability','Fontsize',10); title('Not White Matter test set','Fontsize',12);
 subplot(3,4,12);
-Data = [CSFt{:,1}-CSFt{:,2}, CSFt{:,3}-CSFt{:,4},...
-    CSFt{:,1}-CSFt{:,3},CSFt{:,2}-CSFt{:,4}];
-[h3,CI,p] = rst_1ttest(Data,'estimator','trimmed mean','newfig','no');
-CSFt_diff = rst_trimmean(Data);
-ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
+boxchart(table2array(notCSFd))
+hold on
+plot(mean(table2array(notCSFd)),'-o')
+hold off
+xticklabels({'T1nG1','T1nG2','T12nG1','T12nG2'})
+ylabel('Probability','Fontsize',10); title('Not CSF test set','Fontsize',12);
 
-
-
+%clearvars
 
 % Display the correlation matrices for each condition
 % summery_corrd = table(table(d_correlation_matric(:,1,1), d_correlation_matric(:,2,1), d_correlation_matric(:,3,1),'VariableNames',{'GM', 'WM', 'CSF'}), ...
