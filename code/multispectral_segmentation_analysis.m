@@ -234,6 +234,8 @@ for op = 1:4
             end
             spm_file_merge(V,[types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii']);
             spm_unlink(V.fname);
+            gzip([types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii']);
+            delete([types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii']);
         end
     end
 end
