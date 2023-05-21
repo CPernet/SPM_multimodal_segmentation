@@ -219,3 +219,23 @@ entropy_CSF = table(T1_nG1_entropy(:,3),T1_nG2_entropy(:,3), ...
     T12_nG1_entropy(:,3),T12_nG2_entropy(:,3), 'VariableNames',...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 writetable(entropy_CSF,fullfile(export_folder,'CSF_entropy.csv'))
+
+%% concatenate mean and variance images, export to results
+names = [1 1; 1 2; 12 1; 12 2];
+types = {'mean','var'};
+for op = 1:4
+    for t = 1:2
+        data = dir(fullfile(outdir,[types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '*']));
+        if size(data,1) ~= 3
+            error('only 3 images expected')
+        else
+            for d=1:3
+                V(d) = spm_vol(fullfile(outdir,data(d).name));
+            end
+            spm_file_merge(V,[types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii']);
+            spm_unlink(V.fname);
+        end
+    end
+end
+
+
