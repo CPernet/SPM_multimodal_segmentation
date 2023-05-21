@@ -703,5 +703,44 @@ warning('While in the validation set, adding the T2w image also leads to increas
 warning('the larger change is seen for CSF while in the discovery set this was for WM')
 
 % where do we see differences spatially
+clear variables
+dataset = {'NRU_dataset','ds003653'};
+names = [1 1; 1 2; 12 1; 12 2];
+types = {'mean','var'};
+
+for d=1:2
+    for op = 1:4
+        file        = fullfile(dataset{d},['mean_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii.gz']);
+        V           = spm_vol(gunzip(file));
+        MeanImg{op} = spm_read_vols(V{1});
+        spm_unlink(V{1}(1).fname)
+        file        = fullfile(dataset{d},['var_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii.gz']);
+        V           = spm_vol(gunzip(file));
+        VarImg{op} = spm_read_vols(V{1});
+        spm_unlink(V{1}(1).fname)
+    end
+
+    new = V{1}(1);
+    GMd = readtable([dataset{d} filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);  % High probability of gray matter in vessels
+    for tissue = 1:3
+        T1   = (MeanImg{1}(:,:,:,tissue)+MeanImg{2}(:,:,:,tissue))./2;
+        T12  = (MeanImg{3}(:,:,:,tissue)+MeanImg{4}(:,:,:,tissue))./2;
+        S21  = (VarImg{1}(:,:,:,tissue)+VarImg{2}(:,:,:,tissue))./2;
+        S212 = (VarImg{3}(:,:,:,tissue)+VarImg{4}(:,:,:,tissue))./2;
+        D    = T1-T12;
+        S    = sqrt((S21+S212)./2);
+        T    = D./(S./sqrt(size(GMd,1)));
+        P    = 2 * tcdf(-abs(T), size(GMd,1) - 1);
+        new.descrip         = ['T-test tissue class ' num2str(tissue)];
+        new.private.descrip = '3D';
+        new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) '.nii'];
+        spm_write_vol(new,T);
+        new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) 'masked.nii'];
+        spm_write_vol(new,T.*P<.05);
+    end
+end
+
+
+
 
 
