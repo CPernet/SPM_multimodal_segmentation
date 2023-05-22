@@ -1,2 +1,0 @@
-rprob_atlas_bilateral.nii --> https://drive.google.com/file/d/1qKMhkeHNtsvs3hmQKUcushoC_B0Ah_8J/view?usp=share_link
-rvesselRadius.nii --> https://drive.google.com/file/d/1jz3vxz-4uWqJ781irGc_GnEjCdscYMQl/view?usp=sharing
