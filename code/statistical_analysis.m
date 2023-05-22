@@ -704,6 +704,8 @@ warning('the larger change is seen for CSF while in the discovery set this was f
 
 % where do we see differences spatially
 clear variables
+Vessels = spm_read_vols(spm_vol(fullfile(fileparts(pwd),...
+    ['code' filesep 'Atlases' filesep 'Vessels' filesep 'rvesselRadius.nii'])));
 dataset = {'NRU_dataset','ds003653'};
 names = [1 1; 1 2; 12 1; 12 2];
 types = {'mean','var'};
@@ -735,8 +737,10 @@ for d=1:2
         new.private.descrip = '3D';
         new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) '.nii'];
         spm_write_vol(new,T);
-        new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) 'masked.nii'];
-        spm_write_vol(new,T.*P<.05);
+        new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) 'thresholded.nii'];
+        spm_write_vol(new,T.*(P<.05));
+        new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) 'thresholded_masked.nii'];
+        spm_write_vol(new,T.*(P<.05).*(Vessels>.5));        
     end
 end
 
