@@ -1,6 +1,6 @@
 % statistical analysis of multispectral segmentation 
 % variables are appended with d for discovery (NRU data)
-% or with a t for test (ds003653).
+% or with a t for test or validation set (ds003653).
 
 cd('../results')
 
@@ -39,7 +39,7 @@ warning('adding a T2 image decreases TIV by %g and %g ml for 1 Gaussian and 2 Ga
 % strict Bonferonni correction
 subplot(2,2,3);
 [TIVt_est, TIVt_CI]   = rst_data_plot(TIVt, 'estimator','trimmed mean','newfig','sub');
-title('TIV test set','Fontsize',12); ylabel('volumes'); 
+title('TIV validation set','Fontsize',12); ylabel('volumes'); 
 xlabel('T1-1G T1-2G T12-1G T12-2G'); subplot(2,2,4)
 Data = [TIVt(:,1)-TIVt(:,2), TIVt(:,3)-TIVt(:,4),...
     TIVt(:,1)-TIVt(:,3),TIVt(:,2)-TIVt(:,4)];
@@ -48,7 +48,7 @@ TIVt_diff = rst_trimmean(Data);
 ylabel('volume differences','Fontsize',10); title('Trimmed mean Differences','Fontsize',12);
 xlabel('1vs.2 3vs.4 1vs.3 2vs.4')
 disp('-----');
-warning('test set confirms differences observed in the discovery set');
+warning('validation set confirms differences observed in the discovery set');
 warning('adding 1 Gaussian increases TIV by %g and %g ml for unimodal and multimodal segmentation',abs(TIVt_diff(1)),abs(TIVt_diff(2)));
 warning('adding a T2 image decreases TIV by %g and %g ml for 1 Gaussian and 2 Gaussians models',TIVt_diff(3),TIVt_diff(4));
 
@@ -179,7 +179,8 @@ disp('and dispruption of correlations indicates a change in tissue class belongi
 disp('with some tissue missing!')
 disp('------------------')
 
-% replication set
+% validation set
+% -----------------
 figure(findobj( 'Type', 'Figure', 'Name', 'Tissue volumes' ));
 subplot(3,4,3);
 [GMt_est, CIt_GM]   = rst_data_plot(GMt{:,:}, 'estimator','trimmed mean','newfig','sub');
@@ -320,7 +321,7 @@ disp("This tell that the tissues dont drastic changes the ranges")
 disp("between the different conditions")
 disp("--------")
 
-% replication set
+% validation set
 [GMt_est, CIt_GM]   = rst_trimmean(GMt{:,:});
 [WMt_est, CIt_WM]   = rst_trimmean(WMt{:,:});
 [CSFt_est, CIt_CSF] = rst_trimmean(CSFt{:,:});
@@ -361,7 +362,7 @@ WMt_table = table(WMt_CI(:,:)',WMt_p','VariableNames',{'CI','p-value'},'RowName'
 CSFt_table = table(CSFt_CI(:,:)',CSFt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
 
 disp('-------------------------')
-disp('     Replication set')
+disp('     Validation set')
 
 GMt_change_count  = mean((GMt.T1_nG1-GMt.T1_nG2)==0)*100;
 WMt_change_count  = mean((WMt.T1_nG1-WMt.T1_nG2)==0)*100;
@@ -395,7 +396,7 @@ disp(GMt_table)
 disp(WMt_table)
 disp(CSFt_table)
 disp("--------")
-disp("Replication set confirmes the findings in the discovery set")
+disp("Validation set confirmes the findings in the discovery set")
 disp("--------")
 disp('-------------------------')
 
@@ -533,7 +534,7 @@ WMt_table  = table(WMt_dCI(:,:)',WMt_p','VariableNames',{'CI','p-value'},'RowNam
 CSFt_table = table(CSFt_dCI(:,:)',CSFt_p','VariableNames',{'CI','p-value'},'RowName',{'T1nG1 vs T1nG2', 'T12nG1 vs T12nG2', 'T1nG1 vs T12nG1', 'T1nG2 vs T12nG2'});
 
 disp('-------------------------')
-disp('     Replication set')
+disp('    Validation set')
 
 GMt_change_count  = mean((GMt.T1_nG1-GMt.T1_nG2)<0)*100;
 WMt_change_count  = mean((WMt.T1_nG1-WMt.T1_nG2)>0)*100;
@@ -659,7 +660,7 @@ xticklabels({'T1','T1 and T2'});
 title('Not CSF discovery set','Fontsize',12);
 ylabel('% of voxels as not CSF'); grid on; box on; ylim([30 70])
 
-% replication set
+% validation set
 subplot(3,4,4); boxchart([mean(notGMt{:,[1 2]},2) mean(notGMt{:,[3 4]},2)])
 hold on; plot(median([mean(notGMt{:,[1 2]},2) mean(notGMt{:,[3 4]},2)]),'.','MarkerSize',25)
 xticklabels({'T1','T1 and T2'}); 
@@ -730,17 +731,22 @@ for d=1:2
         S21  = (VarImg{1}(:,:,:,tissue)+VarImg{2}(:,:,:,tissue))./2;
         S212 = (VarImg{3}(:,:,:,tissue)+VarImg{4}(:,:,:,tissue))./2;
         D    = T1-T12;
-        S    = sqrt((S21+S212)./2);
+        S    = sqrt((S21+S212)./2); % not ideal, std of data rater than of diff
         T    = D./(S./sqrt(size(GMd,1)));
         P    = 2 * tcdf(-abs(T), size(GMd,1) - 1);
+        allp = sort(P(:));
+        V    = length(allp);
+        I    = (1:V)';
+        cVN  = sum(1./(1:V));
+        pN   = allp(max(find(allp<=I/V*0.05/cVN))); % FDR threshold
         new.descrip         = ['T-test tissue class ' num2str(tissue)];
         new.private.descrip = '3D';
         new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) '.nii'];
         spm_write_vol(new,T);
         new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) 'thresholded.nii'];
-        spm_write_vol(new,T.*(P<.05));
+        spm_write_vol(new,T.*(P<pN));
         new.fname           = [dataset{d} filesep 'T-test_tissue_class_' num2str(tissue) 'thresholded_masked.nii'];
-        spm_write_vol(new,T.*(P<.05).*(Vessels>.5));        
+        spm_write_vol(new,T.*(P<pN).*(Vessels>.5));        
     end
 end
 
