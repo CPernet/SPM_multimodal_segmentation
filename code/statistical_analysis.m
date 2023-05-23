@@ -750,7 +750,39 @@ for d=1:2
     end
 end
 
+%% How much of the missing volumes are now bone (Class 4)?
+cd('../')
+%num_voxels = NaN(2,4);
+
+% Discovery set
+%dartel = spm_read_vols(spm_vol(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT1_nG1_6.nii,4')));  num_voxels(1,1) = nnz(dartel); % Count the non-zero voxels
+%dartel = spm_read_vols(spm_vol(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT1_nG2_6.nii,4')));  num_voxels(1,2) = nnz(dartel); % Count the non-zero voxels
+%dartel = spm_read_vols(spm_vol(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT12_nG1_6.nii,4'))); num_voxels(1,3) = nnz(dartel); % Count the non-zero voxels
+%dartel = spm_read_vols(spm_vol(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT12_nG2_6.nii,4'))); num_voxels(1,4) = nnz(dartel); % Count the non-zero voxels
+
+T = table(spm_summarise(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT1_nG1_6.nii,4'), 'all', 'litres'), ...
+          spm_summarise(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT1_nG2_6.nii,4'), 'all', 'litres'), ...
+          spm_summarise(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT12_nG1_6.nii,4'), 'all', 'litres'), ...
+          spm_summarise(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'anat', filesep, 'templateT12_nG2_6.nii,4'), 'all', 'litres'), ...
+          'RowName',{'Volume (L)'}, 'VariableNames', {'T1_nG1', 'T1_nG2', 'T12_nG1', 'T12_nG2'});
+      
+disp('Discovery set')
+disp('-----------------------')
+disp(T)
 
 
+% Validation set
+%dartel = spm_read_vols(spm_vol(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT1_nG1_6.nii,4'))); num_voxels(2,1) = nnz(dartel); % Count the non-zero voxels
+%dartel = spm_read_vols(spm_vol(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT1_nG2_6.nii,4'))); num_voxels(2,2) = nnz(dartel); % Count the non-zero voxels
+%dartel = spm_read_vols(spm_vol(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT12_nG1_6.nii,4')));num_voxels(2,3) = nnz(dartel); % Count the non-zero voxels
+%dartel = spm_read_vols(spm_vol(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT12_nG2_6.nii,4')));num_voxels(2,4) = nnz(dartel); % Count the non-zero voxels
 
-
+T = table(spm_summarise(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT1_nG1_6.nii,4'), 'all', 'litres'), ...
+          spm_summarise(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT1_nG2_6.nii,4'), 'all', 'litres'), ...
+          spm_summarise(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT12_nG1_6.nii,4'), 'all', 'litres'), ...
+          spm_summarise(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT12_nG2_6.nii,4'), 'all', 'litres'), ...
+          'RowName',{'Volume (L)'}, 'VariableNames', {'T1_nG1', 'T1_nG2', 'T12_nG1', 'T12_nG2'});
+      
+disp('Validation set')
+disp('-----------------------')
+disp(T)
