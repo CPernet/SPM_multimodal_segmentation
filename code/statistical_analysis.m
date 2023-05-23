@@ -769,7 +769,7 @@ T = table(spm_summarise(fullfile('nrudataset', filesep, 'sub-52334', filesep, 'a
 disp('Discovery set')
 disp('-----------------------')
 disp(T)
-
+warning('By adding T2w image the tissue class grew with an avage of %g liters',(T.T12_nG1-T.T1_nG1+T.T12_nG2-T.T1_nG2)/2)
 
 % Validation set
 %dartel = spm_read_vols(spm_vol(fullfile('ds003653', filesep, 'sub-718216', filesep, 'anat', filesep, 'templateT1_nG1_6.nii,4'))); num_voxels(2,1) = nnz(dartel); % Count the non-zero voxels
@@ -786,3 +786,4 @@ T = table(spm_summarise(fullfile('ds003653', filesep, 'sub-718216', filesep, 'an
 disp('Validation set')
 disp('-----------------------')
 disp(T)
+warning('By adding T2w image the tissue class grew with an avage of %g liters',(T.T12_nG1-T.T1_nG1+T.T12_nG2-T.T1_nG2)/2)
