@@ -1,4 +1,4 @@
-function clean_up(fileMap, disable)
+function clean_up(fileMap, disable, moveto)
 %   Clean up unzipped nifti files to spare space on clusters
 %
 %   Inputs:
@@ -23,6 +23,7 @@ function clean_up(fileMap, disable)
             end
             c   = dir([filepath filesep 'c*' T1name]);  for d=1:length(c); delete(fullfile(c(d).folder,c(d).name)); end
             rc  = dir([filepath filesep 'rc*' T1name]); for d=1:length(rc); delete(fullfile(rc(d).folder,rc(d).name)); end
+            if 
             wc  = dir([filepath filesep 'wc*' T1name]); for d=1:length(wc); delete(fullfile(wc(d).folder,wc(d).name)); end
             seg = dir(append(filepath, filesep, '*seg8.mat')); if ~isempty(seg); delete(fullfile(seg.folder,seg.name)); end
             u_rc = dir(append(filepath, filesep, 'u_rc*')); if ~isempty(u_rc); delete(fullfile(u_rc.folder,u_rc.name)); end

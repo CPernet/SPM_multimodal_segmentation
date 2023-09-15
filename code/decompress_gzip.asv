@@ -8,11 +8,10 @@ function fullfilename = decompress_gzip(fullfilename)
 % Check that the file exists
 if ~exist(fullfilename,'file')
     return
-else
-    [~,~,ext] = fileparts(fullfilename);
+else 
+    [filepath,name,ext] = fileparts(fullfilename);
     if strcmpi(ext,'gz')
-        % Gunzip the file else nothing and the name is correct
-        fullfilename = gunzip(fullfilename);
-    end
+        % Gunzip the file
+    fullfilename = gunzip(fullfilename);
 end
 

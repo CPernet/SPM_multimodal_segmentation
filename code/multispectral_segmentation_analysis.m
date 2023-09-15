@@ -1,7 +1,6 @@
 %% Data analysis workflow: multispectral segmentation analysis
 %
-% This is the master script that described and execute the data analysis
-% workflow for the 'Model Parametrization for Multispectral Segmentation'
+% This is the master script that describes and executes the data analysis
 %
 % The main aim of the study is to test the SPM12 (r7771) multispectral
 % segmentation. To do this we segment data and normalizing
@@ -11,27 +10,38 @@
 % - using T1 and T2 with 2 Gaussians per tissue class
 % A Dartel template is also constructed in each case for vizualization.
 %
+% A secondary analysis was performed using the new multimodal segmentation
+% Multi-Brain https://github.com/WTCN-computational-anatomy-group/mb
+%
 % Several analyses are performed from these images
 % - Compare derived volumes of tissue (TIV, GM, WM, CSF and their relarive proportions)
 % - Compare tissue distributions via shift funtions and quantify proportions per probability
 % - Compare GM images (density using VBM) 
 
-% internal checks 
-debug = false; % what is happening: set to another value than false
-
 clear variales
+
 %% set up the directories
-root    = fileparts(which('multispectral_segmentation_analysis.m')); cd(root)
-datadir = fullfile(root, '..', filesep,'sourcedata', filesep);
-outdir  = fullfile(root, '..',  filesep, 'derivatives', filesep);
-addpath(root);
+root = fileparts(mfilename('fullpath'));
+if isempty(root)
+    root     = fileparts(which('multispectral_segmentation_analysis.m'));
+end
+addpath(root); % so we can run the code
 
-export_folder = '';
-% '/indirect/staff/cyrilpernet/multispectral_segmentation/Code/SPM_multimodal_segmentation/results/ds003653'
-% '/indirect/staff/cyrilpernet/multispectral_segmentation/Code/SPM_multimodal_segmentation/results/NRU_dataset'
+% datadir       = fullfile(root(1:strfind(root,'Code')-1),'sourcedata');
+% e.g.
+datadir       = fullfile(root(1:strfind(root,'Code')-1),'ds003653');
+% datadir       = fullfile(root(1:strfind(root,'Code')-1),'nrudataset');
 
-if isempty(export_folder)
-    error('specify where to export data for statistical analysis and sharing')
+% local output of segmented images and mat files
+outdir        = fullfile(datadir, 'derivatives');
+if ~exist(outdir,'dir')
+    mkdir(outdir)
+end
+% where we push csv files for sharing
+[~,name]=fileparts(datadir);
+export_folder = fullfile(fileparts(root),['results' filesep name]);
+if ~exist(export_folder,'dir')
+    mkdir(export_folder)
 end
 
 %% Image processing
@@ -49,7 +59,7 @@ end
 options = struct('modality',[],'NGaussian',[],'Modulate','No');
 
 % run the segmentation 4 times
-for op = 1:4
+for op = 4:-1:1
     if op == 1
         options.modality  = 'T1';
         options.NGaussian = 1;
@@ -63,11 +73,11 @@ for op = 1:4
         options.modality  = 'T12';
         options.NGaussian = 2;
     end
-    out{op} = segment_images(datadir,outdir,options,debug);
+    out{op} = segment_images(datadir,outdir,options);
     cd(root); save segmentation_jobs_out out
     
     % compute means and variances
-   for class = 1:3
+   for class = 3:-1:1
         for n=length(out{op})-1:-1:1
             if op < 3
                 V(n) = spm_vol(out{op}{n}{1}.tiss(class).wc{1});
@@ -96,9 +106,12 @@ for op = 1:4
     end
     
     % get deciles and create decile images
-    HD{op} = create_decile_images(out{op},outdir,options,debug);
-    cd(outdir); save HD HD
-    
+    cd(outdir); 
+    if ~exist('HD','var') && exist(fullfile(outdir,'HD.mat'),'file')
+        load(fullfile(outdir,'HD.mat')); 
+    end
+    HD{op} = create_decile_images(out{op},outdir,options);
+    save HD HD    
 end
 
 %% export most data as csv for sharing/reproducible analyses
@@ -124,6 +137,16 @@ volumes_CSF = table(T1_nG1_vol(:,3),T1_nG2_vol(:,3), ...
     T12_nG1_vol(:,3),T12_nG2_vol(:,3), 'VariableNames',...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 writetable(volumes_CSF,fullfile(export_folder,'CSF_volumes.csv'))
+
+volumes_Soft = table(T1_nG1_vol(:,4),T1_nG2_vol(:,4), ...
+    T12_nG1_vol(:,4),T12_nG2_vol(:,4), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(volumes_Soft,fullfile(export_folder,'SoftTissue_volumes.csv'))
+
+volumes_Skull = table(T1_nG1_vol(:,5),T1_nG2_vol(:,5), ...
+    T12_nG1_vol(:,5),T12_nG2_vol(:,5), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(volumes_Skull,fullfile(export_folder,'Skull_volumes.csv'))
 
 % distrib_vessels -- mostly classified as below 0.1 or above 0.9
 % summarize across voxels as a frequency
@@ -220,24 +243,5 @@ entropy_CSF = table(T1_nG1_entropy(:,3),T1_nG2_entropy(:,3), ...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 writetable(entropy_CSF,fullfile(export_folder,'CSF_entropy.csv'))
 
-%% concatenate mean and variance images, export to results
-names = [1 1; 1 2; 12 1; 12 2];
-types = {'mean','var'};
-for op = 1:4
-    for t = 1:2
-        data = dir(fullfile(outdir,[types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '*']));
-        if size(data,1) ~= 3
-            error('only 3 images expected')
-        else
-            for d=1:3
-                V(d) = spm_vol(fullfile(outdir,data(d).name));
-            end
-            spm_file_merge(V,[types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii']);
-            spm_unlink(V.fname);
-            gzip([types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii']);
-            delete([types{t} '_modalityT' num2str(names(op,1)) '_NGaussian' num2str(names(op,2)) '.nii']);
-        end
-    end
-end
-
-
+% just copy HD as it is 
+copyfile(fullfile(outdir,'HD.mat'),fullfile(export_folder,'Harrell-Davis-Deciles.mat'))

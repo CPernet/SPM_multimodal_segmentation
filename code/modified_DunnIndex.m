@@ -47,6 +47,7 @@ tissues          = NaN(size(GM,1), size(GM,2), size(GM,3), 3);
 tissues(:,:,:,1) = GM;
 tissues(:,:,:,2) = WM;
 tissues(:,:,:,3) = CSF;
+clear GM WM CSF
 
 figopt = 0; % internal checks turning plotting on to vizualize 
             % what is happening: set to another value than 0
