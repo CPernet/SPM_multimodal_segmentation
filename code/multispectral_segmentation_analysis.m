@@ -148,6 +148,11 @@ volumes_Skull = table(T1_nG1_vol(:,5),T1_nG2_vol(:,5), ...
     {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 writetable(volumes_Skull,fullfile(export_folder,'Skull_volumes.csv'))
 
+volumes_others = table(T1_nG1_vol(:,6),T1_nG2_vol(:,6), ...
+    T12_nG1_vol(:,6),T12_nG2_vol(:,6), 'VariableNames',...
+    {'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
+writetable(volumes_others,fullfile(export_folder,'Others_volumes.csv'))
+
 % distrib_vessels -- mostly classified as below 0.1 or above 0.9
 % summarize across voxels as a frequency
 load('distrib_vesselsT1_nG1.mat');  T1_nG1_distrib_vessels  = distrib_vessels; clear distrib_vessels
