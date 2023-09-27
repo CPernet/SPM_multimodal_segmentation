@@ -1,10 +1,10 @@
 function ent = image_entropy(imagein)
 
-% A simple enthropy measure of an MRI image
+% A simple entropy measure of an MRI image
 % ent = -sum((voxel value i/N voxels)*log(voxel value i/N voxels))
 %
 % FORMAT: ent = image_entropy(imagein)
-% INPUT   imagein is an image eiher as name, header structure
+% INPUT   image in is an image eiher as name, header structure
 %         (see spm_vol.m) or matrix
 % OUTPUT: ent is the image enthropy
 %
