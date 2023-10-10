@@ -144,16 +144,15 @@ if isempty(p)
     c.NumWorkers = Ncores;
     saveProfile(c);
     try
-        parpool(Ncores-1);
+        parpool(Ncores);
     catch flasestart %#ok<NASGU>
         delete(c.Jobs)
         parcluster('local')
-        parpool(Ncores-1);
+        parpool(Ncores);
     end
 end
 
 N = length(batch);
-spm_jobman('initcfg')
 parfor subject=1:N
     try
         % spm_jobman('initcfg') - depends server settings some need that
@@ -163,6 +162,8 @@ parfor subject=1:N
     end
 end
 % delete(gcp('nocreate')) % close parallel pool
+temp_name = ['batch_' options.modality '_nG' num2str(options.NGaussian)];
+save(fullfile(outdir, temp_name), 'batch')
 
 %% for each images get tissue distributions and metrics
 %-----------------------------------------------------------------------
@@ -171,7 +172,7 @@ for p=4:-1:1
 end
 V           = spm_vol(P); clear P;
 M           = single(spm_read_vols(V));
-M           = mean(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
+M           = sum(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
 [x,y,z]     = ind2sub(V(1).dim,find(M)); % location of these voxels
 
 % Load vessels and nuclei templates

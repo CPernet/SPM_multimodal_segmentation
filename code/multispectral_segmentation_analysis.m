@@ -74,7 +74,7 @@ for op = 4:-1:1
         options.NGaussian = 2;
     end
     out{op} = segment_images(datadir,outdir,options);
-    cd(root); save segmentation_jobs_out out
+    cd(root); % save segmentation_jobs_out out
     
     % compute means and variances
    for class = 3:-1:1

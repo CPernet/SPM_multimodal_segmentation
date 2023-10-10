@@ -21,7 +21,7 @@ for p=1:4
 end
 V          = spm_vol(P);
 M          = single(spm_read_vols(V));
-M          = mean(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
+M          = sum(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
 nvoxels    = sum(M(:));                 % how many in mask voxels
 [x,y,z]    = ind2sub(V(1).dim,find(M)); % location of these voxels
 V          = V(1);                      % reset to one image for saving later one
