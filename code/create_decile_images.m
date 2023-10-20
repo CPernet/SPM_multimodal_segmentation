@@ -21,7 +21,7 @@ for p=1:4
 end
 V          = spm_vol(P);
 M          = single(spm_read_vols(V));
-M          = sum(M,4)>0.01;            % mask image (GM,WM,CSF,Meninges)
+M          = sum(M,4)>0.01;             % mask image (GM,WM,CSF,Meninges)
 nvoxels    = sum(M(:));                 % how many in mask voxels
 [x,y,z]    = ind2sub(V(1).dim,find(M)); % location of these voxels
 V          = V(1);                      % reset to one image for saving later one
@@ -47,7 +47,7 @@ for tissue_class = 1:3
         
         img = spm_read_vols(spm_vol(file));                      % threshold image
         if subject == 1
-            img1  = (img<=xd(1)) .* M;
+            img1  = (img<=xd(1));
             img2  = (img>=xd(1)) .* (img<xd(2)) .*M;
             img3  = (img>=xd(2)) .* (img<xd(3)) .*M;
             img4  = (img>=xd(3)) .* (img<xd(4)) .*M;

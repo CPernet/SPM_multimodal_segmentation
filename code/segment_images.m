@@ -193,9 +193,13 @@ nuclei_mask   = spm_read_vols(nuclei_vol) > 0;
 [vessels_x, vessels_y, vessels_z] = ind2sub(vessels_vol.dim, find(vessels_mask));
 distrib_vessels                   = NaN(length(vessels_x),N,3);
 
-for v = size(nuclei_vol,1):-1:1
-    [nuclei_x{v}, nuclei_y{v}, nuclei_z{v}] = ind2sub(nuclei_vol(v).dim, find(squeeze(nuclei_mask(:,:,:,v))));
-    distrib_nuclei{v}                       = NaN(length(nuclei_x{v}),N,3);
+prob = 0:0.1:1;
+for v = size(nuclei_vol,1):-1:1 % for each nucleus
+    for p = 2:10 % split per probability
+        roi = (spm_read_vols(nuclei_vol(v))>prob(p-1)).*(spm_read_vols(nuclei_vol(v))<=prob(p));
+        [nuclei_x{v}{p-1}, nuclei_y{v}{p-1}, nuclei_z{v}{p-1}] = ind2sub(nuclei_vol(v).dim, find(roi));
+        distrib_nuclei{v}{p-1}  = NaN(length(nuclei_x{v}{p-1}),N,3);
+    end
 end
 
 % compute
@@ -229,7 +233,9 @@ for subject=N:-1:1
         tmp_tissues(:,:,:,tissue_class)               = spm_read_vols(spm_vol(fullfile(tmp.folder, tmp.name)));
         distrib_vessels(:,subject,tissue_class)       = spm_get_data(fullfile(tmp.folder, tmp.name), [vessels_x, vessels_y, vessels_z]');
         for v = size(nuclei_vol,1):-1:1
-            distrib_nuclei{v}(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [nuclei_x{v}, nuclei_y{v}, nuclei_z{v}]');
+            for p = 1:9
+                distrib_nuclei{v}{p}(:,subject,tissue_class) = spm_get_data(fullfile(tmp.folder, tmp.name), [nuclei_x{v}{p}, nuclei_y{v}{p}, nuclei_z{v}{p}]');
+            end
         end
 
         % calculate entropy for tissue
