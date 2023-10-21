@@ -252,7 +252,7 @@ writetable(entropy_CSF,fullfile(export_folder,'CSF_entropy.csv'))
 copyfile(fullfile(outdir,'HD.mat'),fullfile(export_folder,'Harrell-Davis-Deciles.mat'))
 
 % just copy nuclei as it is
-copyfile(fullfile(outdir,'distrib_nucleiT1_nG1.mat'),fullfile(export_folder,'distrib_nucleiT1_nG1.mat.mat'))
-copyfile(fullfile(outdir,'distrib_nucleiT1_nG2.mat'),fullfile(export_folder,'distrib_nucleiT1_nG2.mat.mat'))
-copyfile(fullfile(outdir,'distrib_nucleiT12_nG1.mat'),fullfile(export_folder,'distrib_nucleiT12_nG1.mat.mat'))
-copyfile(fullfile(outdir,'distrib_nucleiT12_nG2.mat'),fullfile(export_folder,'distrib_nucleiT12_nG2.mat.mat'))
+copyfile(fullfile(outdir,'distrib_nucleiT1_nG1.mat'),fullfile(export_folder,'distrib_nucleiT1_nG1.mat'))
+copyfile(fullfile(outdir,'distrib_nucleiT1_nG2.mat'),fullfile(export_folder,'distrib_nucleiT1_nG2.mat'))
+copyfile(fullfile(outdir,'distrib_nucleiT12_nG1.mat'),fullfile(export_folder,'distrib_nucleiT12_nG1.mat'))
+copyfile(fullfile(outdir,'distrib_nucleiT12_nG2.mat'),fullfile(export_folder,'distrib_nucleiT12_nG2.mat'))
