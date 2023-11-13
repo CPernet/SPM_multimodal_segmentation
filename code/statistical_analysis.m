@@ -664,7 +664,7 @@ for data_type = 1:3
     else
         dd = CSFdd; td = CSFtd;
         figure('Name','Shift function CSF');
-        hy = [-0.38 -0.38 -0.28 -0.28];
+        hy = [-0.38 -0.45 -0.28 -0.28];
     end
 
     % plot ordering subject per value to have a color gradient (not 100%
@@ -685,7 +685,7 @@ for data_type = 1:3
 
     for s = 1: size(dd,1)
         subplot(2,2,1); hold on
-        plot(1:9,dd(index(s),1:9),'Color',CC(s,:));
+        plot(1:9,dd(index1(s),1:9),'Color',CC(s,:));
         subplot(2,2,3); hold on
         plot(1:9,dd(index2(s),10:18),'Color',CC(s,:));
     end
@@ -746,8 +746,6 @@ end
 %% 5. Accuracy testing for ROI
 % -----------------------------
 
-
-
 % tissue change must be stronger leading to smaller values in voxels with
 % arteries located inside the brain too (not just soft tissue and bones)
 
@@ -785,7 +783,7 @@ data         = [diff(GMratiod,1,2) diff(WMratiod,1,2) diff(CSFratiod,1,2)];
 [hd,CIdd,pd] = rst_1ttest(data,'trimmean','figure','off'); 
 data         = [diff(GMratiot,1,2) diff(WMratiot,1,2) diff(CSFratiot,1,2)]; subplot(1,2,2)
 [TMt,CIt]    = rst_trimmean([GMratiot WMratiot CSFratiot]);
-[ht,CItd,pt] = rst_1ttest(data,'trimmean','figure','off'); title('Validation set ratios')
+[ht,CItd,pt] = rst_1ttest(data,'trimmean','figure','off'); 
 
 figure('Name','ratio tests'); 
 subplot(1,3,1);plot([0 5],[0 5],'k','LineWidth',2);
@@ -809,7 +807,7 @@ title('P(CSF<.1)/P(CSF>.9)'); grid on; axis square
 
 % put those ratios back into percentages context
 disp('------------------------------------')
-warning('While not capturing the full range of probabilities, threshoding tissues at 0.1 and 0.9, captuCC %g%% all vessel voxels',...
+warning('While not capturing the full range of probabilities, threshoding tissues at 0.1 and 0.9, captured %g%% all vessel voxels',...
     mean([mean(mean(notGMdv{:,:}+GMdv{:,:})) ...
     mean(mean(notWMdv{:,:}+WMdv{:,:})) ...
     mean(mean(notCSFdv{:,:}+CSFdv{:,:})) ...
@@ -832,7 +830,7 @@ fprintf('In absolute values, adding T2w means %g%% in GM vs %g%% not GM\n',...
     mean(mean(notGMdv{:,3}-notGMdv{:,1} + notGMdv{:,4}-notGMdv{:,2}) +...
     mean(notGMtv{:,3}-notGMtv{:,1} + notGMtv{:,4}-notGMtv{:,2})));
 fprintf('In absolute values, adding T2w means %g%% in WM vs %g%% not WM\n',...
-    mean(mean(WMdv{:,3}-WMd{:,1} + WMdv{:,4}-WMdv{:,2}) + ...
+    mean(mean(WMdv{:,3}-WMdv{:,1} + WMdv{:,4}-WMdv{:,2}) + ...
     mean(WMtv{:,3}-WMtv{:,1} + WMtv{:,4}-WMtv{:,2})), ...
     mean(mean(notWMdv{:,3}-notWMdv{:,1} + notWMdv{:,4}-notWMdv{:,2}) +...
     mean(notWMtv{:,3}-notWMtv{:,1} + notWMtv{:,4}-notWMtv{:,2})));
@@ -842,4 +840,11 @@ fprintf('In absolute values, adding T2w means %g%% in CSF vs %g%% not CSF\n',...
     mean(mean(notCSFdv{:,3}-notCSFdv{:,1} + notCSFdv{:,4}-notCSFdv{:,2}) +...
     mean(notCSFtv{:,3}-notCSFtv{:,1} + notCSFtv{:,4}-notCSFtv{:,2})));
 
+% Repeat the analysis for nuclei 
+% ------------------------------
+% The analysis focuses on GM -- for the sake of completness it is also done
+% for WM and CFS is is not relevant here since nuclei are GM. What is
+% relevant is the a-priori probability of being GM vs observed.
 
+GMnv = load(['nrudataset' filesep 'GrayMatter_vessels.csv']);
+GMnd = load(['ds003653' filesep 'GrayMatter_vessels.csv']);
