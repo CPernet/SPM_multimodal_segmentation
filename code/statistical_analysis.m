@@ -4,26 +4,22 @@
 % while the public OpenNeuro ds003653 data (N=87) are the validation set.
 % For each analysis, we compute effect sizes with confidence intervals to
 % evaluate if effects can reproduce and test for significance using NHST to
-% evaluate if effects can replicate.
+% evaluate if effects can replicate. After running the demographics and
+% data check, any section can be run separatelty.
 
 addpath('external')
 cd('../results')
+
+% ----------------------------------------
+%% demographics and checking data ordering 
+% always run this before any other sections
+% ----------------------------------------
 
 % read the data
 participantsd = readtable(['nrudataset' filesep 'participants.tsv'], ...
     'ReadRowNames',false,'FileType','delimitedtext');   
 participantst = readtable(['ds003653' filesep 'participants.tsv'], ...
     'ReadRowNames',false,'FileType','delimitedtext');   
-GMd  = readtable(['nrudataset' filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);           
-WMd  = readtable(['nrudataset' filesep 'WhiteMatter_volumes.csv'],'ReadRowNames',false);           
-CSFd = readtable(['nrudataset' filesep 'CSF_volumes.csv'],'ReadRowNames',false);           
-GMt  = readtable(['ds003653' filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);           
-WMt  = readtable(['ds003653' filesep 'WhiteMatter_volumes.csv'],'ReadRowNames',false);           
-CSFt = readtable(['ds003653' filesep 'CSF_volumes.csv'],'ReadRowNames',false);           
-
-% ----------------------------------------
-%% demographics and checking data ordering
-% ----------------------------------------
 
 % load the SPM batch as volumes are reported using this ordering, and 
 % ensures that the metadata follow that order allowing to track or group subjects 
@@ -46,6 +42,7 @@ clear participantsd participantst
 
 % now extract info
 STUDIES = unique(metad.study);
+scanner = strcmp('ContSSRI',metad.study(:))+(strcmp('NeuroPharm1',metad.study(:))+strcmp('Migræne',metad.study(:)))*2;
 fprintf('The discovery dataset has %g subjects\n',size(metad,1))
 fprintf('With an average Male/Female sex ratio of %g (%g%% males, %g%% females)\n ', ...
     sum(strcmpi(metad.Gender,'M')) / sum(strcmpi(metad.Gender,'F')), ...
@@ -84,6 +81,13 @@ fprintf('With an average Control/Patient ratio of %g (%g%% controls, %g%% patien
 %% 1. Volume estimates
 % ---------------------
 
+GMd  = readtable(['nrudataset' filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);           
+WMd  = readtable(['nrudataset' filesep 'WhiteMatter_volumes.csv'],'ReadRowNames',false);           
+CSFd = readtable(['nrudataset' filesep 'CSF_volumes.csv'],'ReadRowNames',false);           
+GMt  = readtable(['ds003653' filesep 'GrayMatter_volumes.csv'],'ReadRowNames',false);           
+WMt  = readtable(['ds003653' filesep 'WhiteMatter_volumes.csv'],'ReadRowNames',false);           
+CSFt = readtable(['ds003653' filesep 'CSF_volumes.csv'],'ReadRowNames',false);           
+
 TIVd = [GMd{:,1}+WMd{:,1}+CSFd{:,1} GMd{:,2}+WMd{:,2}+CSFd{:,2} ...
     GMd{:,3}+WMd{:,3}+CSFd{:,3} GMd{:,4}+WMd{:,4}+CSFd{:,4}].*1000;
 TIVt = [GMt{:,1}+WMt{:,1}+CSFt{:,1} GMt{:,2}+WMt{:,2}+CSFt{:,2} ...
@@ -118,48 +122,48 @@ figure(findobj( 'Type', 'Figure', 'Name', 'Tissue volumes' ));
 
 % discovery
 gp = [repmat({'1 Gaussian'},size(GMd,1),1);repmat({'2 Gaussians'},size(GMd,1),1)]; 
-subplot(6,13,[5 6]); plot(K1{1},'b','LineWidth',2); hold on; plot(K1{2},'r','LineWidth',2); 
+subplot(6,13,[5 6]); plot(K1{1},'b','LineWidth',2); hold on; plot(K1{2},'--b','LineWidth',2); 
 grid on; set(gca,'xticklabel',{[]}); title('GM volumes')
 subplot(6,13,[13+5 13+6 26+5 26+6]); gscatter([GMd{:,1};GMd{:,2}].*1000,[GMd{:,3};GMd{:,4}].*1000,gp);
 grid on; axis('square'); xlabel('T1w'); ylabel('T1w & T2w'); legend('off'); axis([400 1000 400 1000])
-subplot(6,13,[13+7 26+7]); plot(fliplr(K1{3}),'b','LineWidth',2); hold on; 
+subplot(6,13,[13+7 26+7]); plot(fliplr(K1{3}),'--r','LineWidth',2); hold on; 
 grid on; plot(fliplr(K1{4}),'r','LineWidth',2); set(gca,'xticklabel',{[]}); camroll(-90)
 
-subplot(6,13,[8 9]); plot(K2{1},'b','LineWidth',2); hold on; plot(K2{2},'r','LineWidth',2); 
+subplot(6,13,[8 9]); plot(K2{1},'b','LineWidth',2); hold on; plot(K2{2},'--b','LineWidth',2); 
 grid on; set(gca,'xticklabel',{[]}); title('WM volumes')
 subplot(6,13,[13+8 13+9 26+8 26+9]); gscatter([WMd{:,1};WMd{:,2}].*1000,[WMd{:,3};WMd{:,4}].*1000,gp);
 grid on; axis('square'); xlabel('T1w'); legend('off'); axis([300 650 300 650])
-subplot(6,13,[13+10 26+10]); plot(fliplr(K2{3}),'b','LineWidth',2); hold on; 
+subplot(6,13,[13+10 26+10]); plot(fliplr(K2{3}),'--r','LineWidth',2); hold on; 
 grid on; plot(fliplr(K2{4}),'r','LineWidth',2); set(gca,'xticklabel',{[]}); camroll(-90)
 
-subplot(6,13,[11 12]); plot(K3{1},'b','LineWidth',2); hold on; plot(K3{2},'r','LineWidth',2); 
+subplot(6,13,[11 12]); plot(K3{1},'b','LineWidth',2); hold on; plot(K3{2},'--b','LineWidth',2); 
 grid on; set(gca,'xticklabel',{[]}); title('CSF volumes')
 subplot(6,13,[13+11 13+12 26+11 26+12]); gscatter([CSFd{:,1};CSFd{:,2}].*1000,[CSFd{:,3};CSFd{:,4}].*1000,gp);
 grid on; axis('square'); xlabel('T1w'); legend('off'); axis([100 450 100 450])
-subplot(6,13,[13+13 26+13]); plot(fliplr(K3{3}),'b','LineWidth',2); hold on; 
+subplot(6,13,[13+13 26+13]); plot(fliplr(K3{3}),'--r','LineWidth',2); hold on; 
 grid on; plot(fliplr(K3{4}),'r','LineWidth',2); set(gca,'xticklabel',{[]}); camroll(-90)
 
 % validatation
 gp = [repmat({'1 Gaussian'},size(GMt,1),1);repmat({'2 Gaussians'},size(GMt,1),1)]; 
-subplot(6,13,[39+5 39+6]); plot(K4{1},'b','LineWidth',2); hold on; plot(K4{2},'r','LineWidth',2); 
+subplot(6,13,[39+5 39+6]); plot(K4{1},'b','LineWidth',2); hold on; plot(K4{2},'--b','LineWidth',2); 
 grid on; set(gca,'xticklabel',{[]}); 
 subplot(6,13,[52+5 52+6 65+5 65+6]); gscatter([GMt{:,1};GMt{:,2}].*1000,[GMt{:,3};GMt{:,4}].*1000,gp);
 grid on; axis('square'); xlabel('T1w'); ylabel('T1w & T2w'); legend('off'); axis([400 1000 400 1000])
-subplot(6,13,[52+7 65+7]); plot(K1{3},'b','LineWidth',2); hold on; 
+subplot(6,13,[52+7 65+7]); plot(K1{3},'--r','LineWidth',2); hold on; 
 grid on; plot(K1{4},'r','LineWidth',2); set(gca,'xticklabel',{[]}); camroll(-90)
 
-subplot(6,13,[39+8 39+9]); plot(K5{1},'b','LineWidth',2); hold on; plot(K5{2},'r','LineWidth',2); 
+subplot(6,13,[39+8 39+9]); plot(K5{1},'b','LineWidth',2); hold on; plot(K5{2},'--b','LineWidth',2); 
 grid on; set(gca,'xticklabel',{[]}); 
 subplot(6,13,[52+8 52+9 65+8 65+9]); gscatter([WMt{:,1};WMt{:,2}].*1000,[WMt{:,3};WMt{:,4}].*1000,gp);
 grid on; axis('square'); xlabel('T1w'); legend('off'); axis([300 650 300 650])
-subplot(6,13,[52+10 65+10]); plot(fliplr(K5{3}),'b','LineWidth',2); hold on; 
+subplot(6,13,[52+10 65+10]); plot(fliplr(K5{3}),'--r','LineWidth',2); hold on; 
 grid on; plot(fliplr(K5{4}),'r','LineWidth',2); set(gca,'xticklabel',{[]}); camroll(-90)
 
-subplot(6,13,[39+11 39+12]); plot(K6{1},'b','LineWidth',2); hold on; plot(K6{2},'r','LineWidth',2); 
+subplot(6,13,[39+11 39+12]); plot(K6{1},'b','LineWidth',2); hold on; plot(K6{2},'--b','LineWidth',2); 
 grid on; set(gca,'xticklabel',{[]}); 
 subplot(6,13,[52+11 52+12 65+11 65+12]); gscatter([CSFt{:,1};CSFt{:,2}].*1000,[CSFt{:,3};CSFt{:,4}].*1000,gp);
 grid on; axis('square'); xlabel('T1w'); legend('off'); axis([100 450 100 450])
-subplot(6,13,[52+13 65+13]); plot(fliplr(K6{3}),'b','LineWidth',2); hold on; 
+subplot(6,13,[52+13 65+13]); plot(fliplr(K6{3}),'--r','LineWidth',2); hold on; 
 grid on; plot(fliplr(K6{4}),'r','LineWidth',2); set(gca,'xticklabel',{[]}); camroll(-90)
 
 % table 1  
@@ -199,7 +203,6 @@ disp(summary);
 % test (repeated measure ANOVA) and multiple pair differences (alphav is adjusted
 % using Hochberg step-up procedure)
 
-scanner = strcmp('ContSSRI',metad.study(:))+(strcmp('NeuroPharm1',metad.study(:))+strcmp('Migræne',metad.study(:)))*2;
 result = rst_rep_anova_T2(TIVd,scanner,[2 2],1000,{'modality','n_gaussians'});
 disp('-----');
 disp('no scanner effect')
@@ -241,6 +244,19 @@ summary = table([CId_diff(1,1) TIVd_diff(1) CId_diff(2,1); CIt_diff(1,1) TIVt_di
     'RowNames',{'diff discovery','diff test'},'VariableNames',{'T1 G2-G1','T12 G2-G1','G1 T12-T1','G2 T12-T1'});
 disp(summary); 
 
+% find subjects with average effect to illustrate 
+% tmp = (abs(Data1) - abs(TIVd_diff));
+% [~,index1]=sort([tmp(:,1)+tmp(:,2) tmp(:,3)+tmp(:,4)]);
+% tmp = (abs(Data2) - abs(TIVt_diff));
+% [~,index2]=sort([tmp(:,1)+tmp(:,2) tmp(:,3)+tmp(:,4)]);
+% warning('typical subjects for TIV difference due to parametrization')
+% metad(index1(1,1),:)
+% metat(index2(1,1),:)
+% warning('typical subjects for TIV difference due to input')
+% metad(index1(1,2),:)
+% metat(index2(1,2),:)
+
+
 %% Where are the missing volumes?
 % --------------------------------
 
@@ -266,8 +282,8 @@ fprintf('and %g ml in the ''other'' class\n', ...
 fprintf('Adding a Gaussian leads to %g ml\n', (mean(TIVd(:,2)-TIVd(:,1)+TIVd(:,4)-TIVd(:,3))+...
     mean(TIVt(:,2)-TIVt(:,1)+TIVt(:,4)-TIVt(:,3)))/4)
 fprintf('this is compensated by a change of %g ml in soft tissue\n', ...
-    (mean(SoftTissued{:,2}-SoftTissued{:,1}+SoftTissued{:,4}-SoftTissued{:,4})+...
-    mean(SoftTissuet{:,2}-SoftTissuet{:,1}+SoftTissuet{:,4}-SoftTissuet{:,4}))*250)
+    (mean(SoftTissued{:,2}-SoftTissued{:,1}+SoftTissued{:,4}-SoftTissued{:,3})+...
+    mean(SoftTissuet{:,2}-SoftTissuet{:,1}+SoftTissuet{:,4}-SoftTissuet{:,3}))*250)
 fprintf('this is compensated by a change of %g ml in bone tisue\n', ...
     (mean(Skulld{:,2}-Skulld{:,1}+Skulld{:,4}-Skulld{:,4})+...
     mean(Skullt{:,2}-Skullt{:,1}+Skullt{:,4}-Skullt{:,4}))*250)
@@ -656,15 +672,18 @@ for data_type = 1:3
     if data_type == 1
         dd = GMdd; td = GMtd;
         figure('Name','Shift function GM');
-        hy = [-0.14 -0.09 -0.09 -0.04];
+        hy = -0.14;
+        ax = [0.5 9.5 -0.15 0.1];
     elseif data_type == 2
         dd = WMdd; td = WMtd;
         figure('Name','Shift function WM');
-        hy = [-0.18 -0.09 -0.14 -0.05];
+        hy = -0.18;
+        ax = [0.5 9.5 -0.20 0.05];
     else
         dd = CSFdd; td = CSFtd;
         figure('Name','Shift function CSF');
-        hy = [-0.38 -0.45 -0.28 -0.28];
+        hy = -0.38;
+        ax = [0.5 9.5 -0.4 0.2];
     end
 
     % plot ordering subject per value to have a color gradient (not 100%
@@ -690,21 +709,21 @@ for data_type = 1:3
         plot(1:9,dd(index2(s),10:18),'Color',CC(s,:));
     end
 
-    subplot(2,2,1); grid on; box on; title('GM 1 Gaussian - Discovery dataset'); s=1;
+    subplot(2,2,1); grid on; box on; title('1 Gaussian - Discovery dataset'); s=1;
     for i=1:9
         rectangle('Position',[i-0.2,CI(1,i),0.4,CI(2,i)-CI(1,i)],'Curvature',[0.4 0.4],'LineWidth',2,...
             'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.35 0.35 0.35]);
         plot([i-0.2 i+0.2],[TMd(s) TMd(s)],'LineWidth',3,'Color',[0.35 0.35 0.35]); s=s+1;
     end
-    plot(1:9,h*hy(1),'r*');
+    plot(1:9,h*hy,'r*'); axis(ax);
 
-    subplot(2,2,3); grid on; box on; title('GM 2 Gaussians - Discovery dataset')
+    subplot(2,2,3); grid on; box on; title('2 Gaussians - Discovery dataset')
     for i=1:9
         rectangle('Position',[i-0.2,CI2(1,i),0.4,CI2(2,i)-CI2(1,i)],'Curvature',[0.4 0.4],'LineWidth',2,...
             'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.35 0.35 0.35]);
         plot([i-0.2 i+0.2],[TMd(s) TMd(s)],'LineWidth',3,'Color',[0.35 0.35 0.35]); s=s+1;
     end
-    plot(1:9,h2*hy(2),'r*');
+    plot(1:9,h2*hy,'r*'); axis(ax);
 
     CC          = [zeros(size(td,1),1) linspace(1,0.1,size(td,1))' linspace(0.1,1,size(td,1))'];
     [h,CI,p]    = rst_1ttest(td(:,1:9),'trimmean','figure','off');
@@ -721,25 +740,23 @@ for data_type = 1:3
         plot(1:9,td(index4(s),10:18),'Color',CC(s,:));
     end
 
-    subplot(2,2,2); grid on; box on; title('GM 1 Gaussian - Validation dataset'); s=1;
+    subplot(2,2,2); grid on; box on; title('1 Gaussian - Validation dataset'); s=1;
     for i=1:9
         rectangle('Position',[i-0.2,CI(1,i),0.4,CI(2,i)-CI(1,i)],'Curvature',[0.4 0.4],'LineWidth',2,...
             'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.35 0.35 0.35]);
         plot([i-0.2 i+0.2],[TMd(s) TMd(s)],'LineWidth',3,'Color',[0.35 0.35 0.35]); s=s+1;
     end
-    plot(1:9,h*hy(3),'r*');
+    plot(1:9,h*hy,'r*'); axis(ax);
 
-    subplot(2,2,4); grid on; box on; title('GM 2 Gaussians - Validation dataset')
+    subplot(2,2,4); grid on; box on; title('2 Gaussians - Validation dataset')
     for i=1:9
         rectangle('Position',[i-0.2,CI2(1,i),0.4,CI2(2,i)-CI2(1,i)],'Curvature',[0.4 0.4],'LineWidth',2,...
             'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.35 0.35 0.35]);
         plot([i-0.2 i+0.2],[TMd(s) TMd(s)],'LineWidth',3,'Color',[0.35 0.35 0.35]); s=s+1;
     end
-    plot(1:9,h2*hy(4),'r*');
+    plot(1:9,h2*hy,'r*'); axis(ax);
 
 end
-
-
 
 
 % -----------------------------
@@ -755,57 +772,127 @@ end
 % it indicates more voxels seen as not from that tissue than from that tissue
 % and conversely -- the higher that ratio the better.
 
-GMdv       = readtable(['nrudataset' filesep 'GrayMatter_vessels.csv'],'ReadRowNames',false);  % High probability of Grey matter in vessels
-WMdv       = readtable(['nrudataset' filesep 'WhiteMatter_vessels.csv'],'ReadRowNames',false);           
-CSFdv      = readtable(['nrudataset' filesep 'CSF_vessels.csv'],'ReadRowNames',false);   
-notGMdv    = readtable(['nrudataset' filesep 'Not_GrayMatter_vessels.csv'],'ReadRowNames',false);  % Low probability of Grey matter in vessels
-notWMdv    = readtable(['nrudataset' filesep 'Not_WhiteMatter_vessels.csv'],'ReadRowNames',false);           
-notCSFdv   = readtable(['nrudataset' filesep 'Not_CSF_vessels.csv'],'ReadRowNames',false);   
+GMdv      = readtable(['nrudataset' filesep 'GrayMatter_vessels.csv'],'ReadRowNames',false);  % High probability of Grey matter in vessels
+WMdv      = readtable(['nrudataset' filesep 'WhiteMatter_vessels.csv'],'ReadRowNames',false);           
+CSFdv     = readtable(['nrudataset' filesep 'CSF_vessels.csv'],'ReadRowNames',false);   
+notGMdv   = readtable(['nrudataset' filesep 'Not_GrayMatter_vessels.csv'],'ReadRowNames',false);  % Low probability of Grey matter in vessels
+notWMdv   = readtable(['nrudataset' filesep 'Not_WhiteMatter_vessels.csv'],'ReadRowNames',false);           
+notCSFdv  = readtable(['nrudataset' filesep 'Not_CSF_vessels.csv'],'ReadRowNames',false);   
 
-GMtv       = readtable(['ds003653' filesep 'GrayMatter_vessels.csv'],'ReadRowNames',false);           
-WMtv       = readtable(['ds003653' filesep 'WhiteMatter_vessels.csv'],'ReadRowNames',false);           
-CSFtv      = readtable(['ds003653' filesep 'CSF_vessels.csv'],'ReadRowNames',false);
-notGMtv    = readtable(['ds003653' filesep 'Not_GrayMatter_vessels.csv'],'ReadRowNames',false);           
-notWMtv    = readtable(['ds003653' filesep 'Not_WhiteMatter_vessels.csv'],'ReadRowNames',false);           
-notCSFtv   = readtable(['ds003653' filesep 'Not_CSF_vessels.csv'],'ReadRowNames',false);
+GMtv      = readtable(['ds003653' filesep 'GrayMatter_vessels.csv'],'ReadRowNames',false);           
+WMtv      = readtable(['ds003653' filesep 'WhiteMatter_vessels.csv'],'ReadRowNames',false);           
+CSFtv     = readtable(['ds003653' filesep 'CSF_vessels.csv'],'ReadRowNames',false);
+notGMtv   = readtable(['ds003653' filesep 'Not_GrayMatter_vessels.csv'],'ReadRowNames',false);           
+notWMtv   = readtable(['ds003653' filesep 'Not_WhiteMatter_vessels.csv'],'ReadRowNames',false);           
+notCSFtv  = readtable(['ds003653' filesep 'Not_CSF_vessels.csv'],'ReadRowNames',false);
 
 % test for differences in ratios
-GMratiod  = [mean(notGMdv{:,[1 2]} ./ GMdv{:,[1 2]},2) mean(notGMdv{:,[3 4]} ./ GMdv{:,[3 4]},2)];
-WMratiod  = [mean(notWMdv{:,[1 2]} ./ WMdv{:,[1 2]},2) mean(notWMdv{:,[3 4]} ./ WMdv{:,[3 4]},2)];
-CSFratiod = [mean(notCSFdv{:,[1 2]}./CSFdv{:,[1 2]},2) mean(notCSFdv{:,[3 4]}./CSFdv{:,[3 4]},2)];
-GMratiot  = [mean(notGMtv{:,[1 2]} ./ GMtv{:,[1 2]},2) mean(notGMtv{:,[3 4]} ./ GMtv{:,[3 4]},2)];
-WMratiot  = [mean(notWMtv{:,[1 2]} ./ WMtv{:,[1 2]},2) mean(notWMtv{:,[3 4]} ./ WMtv{:,[3 4]},2)];
-CSFratiot = [mean(notCSFtv{:,[1 2]}./CSFtv{:,[1 2]},2) mean(notCSFtv{:,[3 4]}./CSFtv{:,[3 4]},2)];
+GMratiod  = [notGMdv{:,[1 2]} ./ GMdv{:,[1 2]} ,notGMdv{:,[3 4]} ./ GMdv{:,[3 4]}];
+GMratiot  = [notGMtv{:,[1 2]} ./ GMtv{:,[1 2]} ,notGMtv{:,[3 4]} ./ GMtv{:,[3 4]}];
+result    = rst_rep_anova_T2(GMratiod,scanner,[2 2],1000,{'modality','n_gaussians'});
+meansgd   = rst_rep_anova_plot(GMratiod,ones(259,1),[2 2],3);
+disp('significant effects')
+disp(result.repeated_measure); 
 
+[~,ci,p]  = rst_multicompare(GMratiod,[3 1;4 2], 'estimator', 'trimmed mean','newfig','no');
+fprintf('Adding T2w images increases the GM ratio when using 1 Gaussian [%g %g] p=%g but decreases it with 2 Gaussians [%g %g] p=%g\n', ...
+    ci(1,1), ci(2,1), p(1), ci(1,2), ci(2,2), p(2));
+meansgt   = rst_rep_anova_plot(GMratiot,ones(87,1),[2 2],3);
+[h,~,p]   = rst_1ttest((GMratiot(:,3)-GMratiot(:,1))-(GMratiot(:,4)-GMratiot(:,2)),'trimmean');
+[~,ci]    = rst_trimmean([GMratiot(:,3)-GMratiot(:,1), GMratiot(:,4)-GMratiot(:,2)]);
+fprintf('interation effect replicates p=%g\n although only 1 Gaussian case shows an increase [%g %g] vs [%g %g]', ...
+    p, ci(1,1), ci(2,1), ci(1,2), ci(2,2));
+disp('-----')
+disp('no scanner effect');
+disp(result.gp);
+disp('but scanner interacts with the metric')
+disp(result.interaction)
 
-data         = [diff(GMratiod,1,2) diff(WMratiod,1,2) diff(CSFratiod,1,2)];
-[TMd,CId]    = rst_trimmean([GMratiod WMratiod CSFratiod]);
-[hd,CIdd,pd] = rst_1ttest(data,'trimmean','figure','off'); 
-data         = [diff(GMratiot,1,2) diff(WMratiot,1,2) diff(CSFratiot,1,2)]; subplot(1,2,2)
-[TMt,CIt]    = rst_trimmean([GMratiot WMratiot CSFratiot]);
-[ht,CItd,pt] = rst_1ttest(data,'trimmean','figure','off'); 
+WMratiod  = [notWMdv{:,[1 2]} ./ WMdv{:,[1 2]} ,notWMdv{:,[3 4]} ./ WMdv{:,[3 4]}];
+WMratiot  = [notWMtv{:,[1 2]} ./ WMtv{:,[1 2]} ,notWMtv{:,[3 4]} ./ WMtv{:,[3 4]}];
+result    = rst_rep_anova_T2(WMratiod,scanner,[2 2],1000,{'modality','n_gaussians'});
+meanswd   = rst_rep_anova_plot(WMratiod,ones(259,1),[2 2],3);
+disp('significant effects')
+disp(result.repeated_measure); 
+
+[~,ci,p]  = rst_multicompare(WMratiod,[3 1;4 2], 'estimator', 'trimmed mean','newfig','no');
+fprintf('Adding T2w images always increases the WM ratio: 1 Gaussian [%g %g] p=%g, 2 Gaussians [%g %g] p=%g\n', ...
+    ci(1,1), ci(2,1), p(1), ci(1,2), ci(2,2), p(2));
+meanswt   = rst_rep_anova_plot(WMratiot,ones(87,1),[2 2],3);
+[h,~,p]   = rst_1ttest((WMratiot(:,3)-WMratiot(:,1))-(WMratiot(:,4)-WMratiot(:,2)),'trimmean');
+[~,ci]    = rst_trimmean([WMratiot(:,3)-WMratiot(:,1), WMratiot(:,4)-WMratiot(:,2)]);
+fprintf('interation effect replicates p=%g\n although only 1 Gaussian case shows an increase [%g %g] vs [%g %g]', ...
+    p, ci(1,1), ci(2,1), ci(1,2), ci(2,2));
+disp('-----')
+disp('no scanner effect');
+disp(result.gp);
+disp('but scanner interacts with the metric')
+disp(result.interaction)
+
+CSFratiod = [notCSFdv{:,[1 2]} ./ CSFdv{:,[1 2]} ,notCSFdv{:,[3 4]} ./ CSFdv{:,[3 4]}];
+CSFratiot = [notCSFtv{:,[1 2]} ./ CSFtv{:,[1 2]} ,notCSFtv{:,[3 4]} ./ CSFtv{:,[3 4]}];
+result    = rst_rep_anova_T2(CSFratiod,scanner,[2 2],1000,{'modality','n_gaussians'});
+meanscd   = rst_rep_anova_plot(CSFratiod,ones(259,1),[2 2],3);
+disp('significant effects')
+disp(result.repeated_measure); 
+
+[~,ci,p] = rst_multicompare(CSFratiod,[3 1;4 2], 'estimator', 'trimmed mean','newfig','no');
+fprintf('Adding T2w images always increases the CSF ratio: 1 Gaussian [%g %g] p=%g, 2 Gaussians [%g %g] p=%g\n', ...
+    ci(1,1), ci(2,1), p(1), ci(1,2), ci(2,2), p(2));
+meansct  = rst_rep_anova_plot(CSFratiot,ones(87,1),[2 2],3);
+[h,~,p]  = rst_1ttest((CSFratiot(:,3)-CSFratiot(:,1))-(CSFratiot(:,4)-CSFratiot(:,2)),'trimmean');
+[~,ci]   = rst_trimmean([CSFratiot(:,3)-CSFratiot(:,1), CSFratiot(:,4)-CSFratiot(:,2)]);
+fprintf('interation effect replicates p=%g\n 1 Gaussian case [%g %g], 2 Gausians [%g %g]', ...
+    p, ci(1,1), ci(2,1), ci(1,2), ci(2,2));
+disp('-----')
+disp('no scanner effect');
+disp(result.gp);
+disp('but scanner interacts with the metric')
+disp(result.interaction)
 
 figure('Name','ratio tests'); 
-subplot(1,3,1);plot([0 5],[0 5],'k','LineWidth',2);
-hold on; scatter(GMratiod(:,1),GMratiod(:,2),30,[0 0 1],'filled'); 
-scatter(GMratiot(:,1),GMratiot(:,2),30,[0 1 0],'filled');
-plot([TMd(1) TMt(1)],[TMd(2) TMt(2)],'r*','LineWidth',3)
+subplot(2,3,1); plot([0 5],[0 5],'k','LineWidth',2);
+hold on; scatter(GMratiod(:,1),GMratiod(:,3),30,[0 0 1],'filled'); 
+scatter(GMratiot(:,1),GMratiot(:,3),30,[0 1 0],'filled'); ; axis([0 5 0 5])
+plot([meansgd(1) meansgt(1)],[meansgd(3) meansgt(3)],'r*','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
-title('P(GM<.1)/P(GM>.9)'); grid on; axis square
-subplot(1,3,2);plot([0 100],[0 100],'k','LineWidth',2);
-hold on; scatter(WMratiod(:,1),WMratiod(:,2),30,[0 0 1],'filled'); 
-scatter(WMratiot(:,1),WMratiot(:,2),30,[0 1 0],'filled');
-plot([TMd(3) TMt(3)],[TMd(4) TMt(4)],'r*','LineWidth',3)
+title('P(GM<.1)/P(GM>.9)'); subtitle('1 Gaussian'); grid on; axis square
+subplot(2,3,4); plot([0 5],[0 5],'k','LineWidth',2);
+hold on; scatter(GMratiod(:,2),GMratiod(:,4),30,[0 0 1],'filled'); 
+scatter(GMratiot(:,2),GMratiot(:,4),30,[0 1 0],'filled');
+plot([meansgd(2) meansgt(2)],[meansgd(4) meansgt(4)],'r*','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
-title('P(WM<.1)/P(WM>.9)'); grid on; axis square
-subplot(1,3,3);plot([0 30],[0 30],'k','LineWidth',2);
-hold on; scatter(CSFratiod(:,1),CSFratiod(:,2),30,[0 0 1],'filled'); 
-scatter(CSFratiot(:,1),CSFratiot(:,2),30,[0 1 0],'filled');
-plot([TMd(5) TMt(5)],[TMd(6) TMt(6)],'r*','LineWidth',3)
-xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
-title('P(CSF<.1)/P(CSF>.9)'); grid on; axis square
+subtitle('2 Gaussians'); grid on; axis square; axis([0 5 0 5])
 
-% put those ratios back into percentages context
+subplot(2,3,2);plot([0 110],[0 110],'k','LineWidth',2);
+hold on; scatter(WMratiod(:,1),WMratiod(:,3),30,[0 0 1],'filled'); 
+scatter(WMratiot(:,1),WMratiot(:,3),30,[0 1 0],'filled'); axis([0 110 0 110])
+plot([meanswd(1) meanswt(1)],[meanswd(3) meanswt(3)],'r*','LineWidth',3)
+xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
+title('P(WM<.1)/P(WM>.9)'); subtitle('1 Gaussian'); grid on; axis square
+subplot(2,3,5); plot([0 110],[0 110],'k','LineWidth',2);
+hold on; scatter(WMratiod(:,2),WMratiod(:,4),30,[0 0 1],'filled'); 
+scatter(WMratiot(:,2),WMratiot(:,4),30,[0 1 0],'filled');
+plot([meanswd(2) meanswt(2)],[meanswd(4) meanswt(4)],'r*','LineWidth',3)
+xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
+subtitle('2 Gaussians'); grid on; axis square; axis([0 110 0 110])
+
+subplot(2,3,3);plot([0 30],[0 30],'k','LineWidth',2);
+hold on; scatter(CSFratiod(:,1),CSFratiod(:,3),30,[0 0 1],'filled'); 
+scatter(CSFratiot(:,1),CSFratiot(:,3),30,[0 1 0],'filled'); axis([0 30 0 30])
+plot([meanscd(1) meansct(1)],[meanscd(3) meansct(3)],'r*','LineWidth',3)
+xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
+title('P(CSF<.1)/P(CSF>.9)'); subtitle('1 Gaussian'); grid on; axis square
+subplot(2,3,6); plot([0 30],[0 30],'k','LineWidth',2);
+hold on; scatter(CSFratiod(:,2),CSFratiod(:,4),30,[0 0 1],'filled'); 
+scatter(CSFratiot(:,2),CSFratiot(:,4),30,[0 1 0],'filled');
+plot([meanscd(2) meansct(2)],[meanscd(4) meansct(4)],'r*','LineWidth',3)
+xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
+subtitle('2 Gaussians'); grid on; axis square; axis([0 30 0 30])
+
+
+% put those ratios back into percentages context, it is the numerator or
+% denominator that changes
 disp('------------------------------------')
 warning('While not capturing the full range of probabilities, threshoding tissues at 0.1 and 0.9, captured %g%% all vessel voxels',...
     mean([mean(mean(notGMdv{:,:}+GMdv{:,:})) ...
@@ -824,27 +911,151 @@ fprintf('%g voxels containing large arteries were classified as not GM-WM-CSF\n'
     mean([mean(mean(notGMdv{:,:})) mean(mean(notGMtv{:,:})) ...
     mean(mean(notWMdv{:,:}))  mean(mean(notWMtv{:,:}))...
     mean(mean(notCSFdv{:,:})) mean(mean(notCSFtv{:,:}))]));
+warning('checking what is driving ratio change - the denominator or the numerator (not tissue)')
+warning('1 Gaussian case')
 fprintf('In absolute values, adding T2w means %g%% in GM vs %g%% not GM\n',...
-    mean(mean(GMdv{:,3}-GMdv{:,1} + GMdv{:,4}-GMdv{:,2}) + ...
-    mean(GMtv{:,3}-GMtv{:,1} + GMtv{:,4}-GMtv{:,2})), ...
-    mean(mean(notGMdv{:,3}-notGMdv{:,1} + notGMdv{:,4}-notGMdv{:,2}) +...
-    mean(notGMtv{:,3}-notGMtv{:,1} + notGMtv{:,4}-notGMtv{:,2})));
+    mean(mean(GMdv{:,3}-GMdv{:,1}) + mean(GMtv{:,3}-GMtv{:,1})), ...
+    mean(mean(notGMdv{:,3}-notGMdv{:,1}) + mean(notGMtv{:,3}-notGMtv{:,1} )));
 fprintf('In absolute values, adding T2w means %g%% in WM vs %g%% not WM\n',...
-    mean(mean(WMdv{:,3}-WMdv{:,1} + WMdv{:,4}-WMdv{:,2}) + ...
-    mean(WMtv{:,3}-WMtv{:,1} + WMtv{:,4}-WMtv{:,2})), ...
-    mean(mean(notWMdv{:,3}-notWMdv{:,1} + notWMdv{:,4}-notWMdv{:,2}) +...
-    mean(notWMtv{:,3}-notWMtv{:,1} + notWMtv{:,4}-notWMtv{:,2})));
+    mean(mean(WMdv{:,3}-WMdv{:,1}) + mean(WMtv{:,3}-WMtv{:,1})), ...
+    mean(mean(notWMdv{:,3}-notWMdv{:,1}) + mean(notWMtv{:,3}-notWMtv{:,1})));
 fprintf('In absolute values, adding T2w means %g%% in CSF vs %g%% not CSF\n',...
-    mean(mean(CSFdv{:,3}-CSFdv{:,1} + CSFdv{:,4}-CSFdv{:,2}) + ...
-    mean(CSFtv{:,3}-CSFtv{:,1} + CSFtv{:,4}-CSFtv{:,2})), ...
-    mean(mean(notCSFdv{:,3}-notCSFdv{:,1} + notCSFdv{:,4}-notCSFdv{:,2}) +...
-    mean(notCSFtv{:,3}-notCSFtv{:,1} + notCSFtv{:,4}-notCSFtv{:,2})));
+    mean(mean(CSFdv{:,3}-CSFdv{:,1}) + mean(CSFtv{:,3}-CSFtv{:,1})), ...
+    mean(mean(notCSFdv{:,3}-notCSFdv{:,1}) + mean(notCSFtv{:,3}-notCSFtv{:,1})));
+warning('2 Gaussians case')
+fprintf('In absolute values, adding T2w means %g%% in GM vs %g%% not GM\n',...
+    mean(mean(GMdv{:,4}-GMdv{:,2}) + mean(GMtv{:,4}-GMtv{:,2})), ...
+    mean(mean(notGMdv{:,4}-notGMdv{:,2}) + mean(notGMtv{:,4}-notGMtv{:,2} )));
+fprintf('In absolute values, adding T2w means %g%% in WM vs %g%% not WM\n',...
+    mean(mean(WMdv{:,4}-WMdv{:,2}) + mean(WMtv{:,4}-WMtv{:,2})), ...
+    mean(mean(notWMdv{:,4}-notWMdv{:,2}) + mean(notWMtv{:,4}-notWMtv{:,2})));
+fprintf('In absolute values, adding T2w means %g%% in CSF vs %g%% not CSF\n',...
+    mean(mean(CSFdv{:,4}-CSFdv{:,2}) + mean(CSFtv{:,4}-CSFtv{:,2})), ...
+    mean(mean(notCSFdv{:,4}-notCSFdv{:,2}) + mean(notCSFtv{:,4}-notCSFtv{:,2})));
 
-% Repeat the analysis for nuclei 
+% Analysis for nuclei 
 % ------------------------------
 % The analysis focuses on GM -- for the sake of completness it is also done
-% for WM and CFS is is not relevant here since nuclei are GM. What is
-% relevant is the a-priori probability of being GM vs observed.
+% for WM and CFS but it is not relevant here since nuclei are GM. What is
+% relevant is the a-priori probability of being GM vs observed. (WM and CSF
+% are in the code but not in the article)
 
-GMnv = load(['nrudataset' filesep 'GrayMatter_vessels.csv']);
-GMnd = load(['ds003653' filesep 'GrayMatter_vessels.csv']);
+colorindex = rst_colour_maps(7); colorindex = colorindex(1:2:7,:);
+labels = {'Putamen','Caudate','Nuc. Acumbens','Ext Amygdala',...
+    'Globus palludus (ext)','Globus Pallidus (int)', 'Subs. Nigra (compacta)',...
+    'Red Nucleus', 'Subs. Nigra (reticulata)', 'Parabranchial Pig. nucl.',...
+    'Ventral tegmentum','Ventral Pallidum','Habernular nuclei',...
+    'Hypothalamus','Mammilary Nucleus','Subthalamic nucleus'};
+
+% fist plot the data as the prob of a tissue as a function os the prob of
+% the atlas -- along the way get some estimates to be used for the ratio
+% analysis
+for dataset=1:2
+    if dataset == 1
+        tmp = load(['nrudataset' filesep 'distrib_nucleiT1_nG1.mat']); GMnv.T1nG1   = tmp.distrib_nuclei;
+        tmp = load(['nrudataset' filesep 'distrib_nucleiT12_nG1.mat']); GMnv.T12nG1 = tmp.distrib_nuclei;
+        tmp = load(['nrudataset' filesep 'distrib_nucleiT1_nG2.mat']); GMnv.T1nG2   = tmp.distrib_nuclei;
+        tmp = load(['nrudataset' filesep 'distrib_nucleiT12_nG2.mat']); GMnv.T12nG2 = tmp.distrib_nuclei;
+    else
+        tmp = load(['ds003653' filesep 'distrib_nucleiT1_nG1.mat']); GMnv.T1nG1   = tmp.distrib_nuclei;
+        tmp = load(['ds003653' filesep 'distrib_nucleiT12_nG1.mat']); GMnv.T12nG1 = tmp.distrib_nuclei;
+        tmp = load(['ds003653' filesep 'distrib_nucleiT1_nG2.mat']); GMnv.T1nG2   = tmp.distrib_nuclei;
+        tmp = load(['ds003653' filesep 'distrib_nucleiT12_nG2.mat']); GMnv.T12nG2 = tmp.distrib_nuclei;
+    end
+
+    for tissue = 1:3
+        if tissue == 1, figure('Name','GM');
+        elseif tissue == 2, figure('Name','WM');
+        else, figure('Name','CSF'); end
+
+        for nuclei = size(labels,2):-1:1
+            tmp = cellfun(@(x) squeeze(size(x,1)), GMnv.T1nG1{nuclei}); 
+            tmp(tmp==0)= []; sample(nuclei) = min(tmp); % takes care of the NaN in nuclei 13
+            % compute the mean value for same number of voxels in each atlas prob.
+            tmp  = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
+            data(:,:,tissue,1) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
+            [Mp(nuclei,1,:),CIv(nuclei,1,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,1)));
+            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
+            data(:,:,tissue,2) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
+            [Mp(nuclei,2,:),CIv(nuclei,2,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,2)));
+            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
+            data(:,:,tissue,3) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
+            [Mp(nuclei,3,:),CIv(nuclei,3,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,3)));
+            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
+            data(:,:,tissue,4) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
+            [Mp(nuclei,4,:),CIv(nuclei,4,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,4)));
+
+            subplot(4,4,nuclei);
+            for cond = 1:4
+                plot(1:9,squeeze(Mp(nuclei,cond,:)),'Linewidth',2,'Color',colorindex(cond,:)); hold on
+                if nuclei == 13
+                    fillhandle = patch([1:6 6:-1:1], [squeeze(CIv(nuclei,cond,1,1:6))',fliplr(squeeze(CIv(nuclei,cond,2,1:6))')], colorindex(cond,:));
+                    set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
+                    fillhandle = patch([8:9 9:-1:8], [squeeze(CIv(nuclei,cond,1,8:9))',fliplr(squeeze(CIv(nuclei,cond,2,8:9))')], colorindex(cond,:));
+                    set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
+                else
+                    fillhandle = patch([1:9 9:-1:1], [squeeze(CIv(nuclei,cond,1,:))',fliplr(squeeze(CIv(nuclei,cond,2,:))')], colorindex(cond,:));
+                    set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
+                end
+            end
+
+            title(sprintf('%s\n sample=%g voxels',labels{nuclei},sample(nuclei))); 
+            grid on; xticks(1:9); axis([0.5 9.5 0 1])
+            xticklabels({'.1','.2','.3','.4','.5','.6','.7','.8','.9'});
+            if nuclei == 1 || nuclei == 5 || nuclei == 9 || nuclei == 13
+                if tissue == 1, ylabel('GM density');
+                elseif tissue == 2, ylabel('WM density');
+                else, ylabel('CSF density'); end
+            end
+            if nuclei >= 13
+                xlabel('atlas probability')
+            end
+
+            if dataset == 1
+                if tissue == 1, GMpd{nuclei} = squeeze(data(:,:,tissue,:));
+                elseif tissue == 2, WMpd{nuclei} = squeeze(data(:,:,tissue,:));
+                else,  CSFpd{nuclei} = squeeze(data(:,:,tissue,:)); end
+            else
+                if tissue == 1, GMpv{nuclei} = squeeze(data(:,:,tissue,:));
+                elseif tissue == 2, WMpv{nuclei} = squeeze(data(:,:,tissue,:));
+                else,  CSFpv{nuclei} = squeeze(data(:,:,tissue,:)); end
+            end
+        end
+    end
+    clear data
+end
+
+for dataset=1:2
+    figure
+    for nuclei=1:16
+        if dataset == 1
+            ratio = (WMpd{nuclei}+CSFpd{nuclei})./GMpd{nuclei};
+        else
+            ratio = (WMpv{nuclei}+CSFpv{nuclei})./GMpv{nuclei};
+        end
+        subplot(4,4,nuclei);
+        for cond = 1:4
+            [TM,CI] = rst_trimmean(squeeze(ratio(:,:,cond)));
+            plot(1:9,TM,'Linewidth',2,'Color',colorindex(cond,:)); hold on
+            if nuclei == 13
+                fillhandle = patch([1:6 6:-1:1], [CI(1,1:6) fliplr(CI(2,1:6))], colorindex(cond,:));
+                set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
+                fillhandle = patch([8:9 9:-1:8], [CI(1,8:9) fliplr(CI(2,8:9))], colorindex(cond,:));
+                set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
+            else
+                fillhandle = patch([1:9 9:-1:1], [CI(1,:) fliplr(CI(2,:))], colorindex(cond,:));
+                set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
+            end
+        end
+        title(sprintf('%s\n sample=%g voxels',labels{nuclei},sample(nuclei)));
+        grid on; xticks(1:9); xticklabels({'.1','.2','.3','.4','.5','.6','.7','.8','.9'});
+        if nuclei == 1 || nuclei == 5 || nuclei == 9 || nuclei == 13
+            if tissue == 1, ylabel('GM density');
+            elseif tissue == 2, ylabel('WM density');
+            else, ylabel('CSF density'); end
+        end
+        if nuclei >= 13
+            xlabel('atlas probability')
+        end
+    end
+end
