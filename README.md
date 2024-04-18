@@ -12,6 +12,10 @@ Using multimodal segmentation is supposed to be more accurate, but some studies 
   
 # Analysis
 
+## Altlases
+
+The [Atlases](code/Atlases) subfolder contain the reference article and the link to the nifti files we used.  
+
 ## Code
 
 [multispectral_segmentation_analysis.m](/code/multispectral_segmentation_analysis.m) is the script used to compute all the metrics and thus obtain the results.  
