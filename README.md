@@ -17,8 +17,9 @@ Using multimodal segmentation is supposed to be more accurate, but some studies 
 [multispectral_segmentation_analysis.m](/code/multispectral_segmentation_analysis.m) is the script used to compute all the metrics and thus obtain the results.  
 [segment_images.m](code/segment_images.m) is a subfunction called to perform the SPM12 segmentation, get tissue volume information, get voxel distributions of normalized images, compute the DARTEL template and return the SPM batch jobs.  
 [create_decile_images.m](code/create_decile_images.m) is a subfunction called to compute deciles, which can then be used to perform the shift function analysis.
-[statistical_analysis](code/statistical_analysis.m) is the code reading the 'results' and doing the stats and plots.
-Note: we developed [modified_DunnIndex](code/modified_DunnIndex.m) which allows to look at tissue separation as for discrete segmentation, but this was not used in the main analysis/report. All the data are, however, available.
+[statistical_analysis](code/statistical_analysis.m) is the code reading the 'results' and doing the stats and plots.  
+  
+*Note*: we developed [modified_DunnIndex](code/modified_DunnIndex.m) which allows to look at tissue separation as for discrete segmentation, but this was not used in the main analysis/report. All the data are, however, available.
 
 ## Results
 
