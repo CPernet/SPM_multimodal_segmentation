@@ -667,11 +667,11 @@ WMtd  = [squeeze(HDt.HD{3}(:,:,2))-squeeze(HDt.HD{1}(:,:,2)) ...
 CSFtd = [squeeze(HDt.HD{3}(:,:,3))-squeeze(HDt.HD{1}(:,:,3)) ...
     squeeze(HDt.HD{4}(:,:,3))-squeeze(HDt.HD{2}(:,:,3))];
 
+
 for data_type = 1:3
 
     if data_type == 1
         dd = GMdd; td = GMtd;
-        figure('Name','Shift function GM');
         hy = -0.14;
         ax = [0.5 9.5 -0.15 0.1];
     elseif data_type == 2
@@ -851,44 +851,42 @@ disp('but scanner interacts with the metric')
 disp(result.interaction)
 
 figure('Name','ratio tests'); 
-subplot(2,3,1); plot([0 5],[0 5],'k','LineWidth',2);
-hold on; scatter(GMratiod(:,1),GMratiod(:,3),30,[0 0 1],'filled'); 
-scatter(GMratiot(:,1),GMratiot(:,3),30,[0 1 0],'filled'); ; axis([0 5 0 5])
-plot([meansgd(1) meansgt(1)],[meansgd(3) meansgt(3)],'r*','LineWidth',3)
+subplot(2,3,1); scatter(GMratiod(:,1),GMratiod(:,3),30,[0 0 1],'filled'); 
+hold on; scatter(GMratiot(:,1),GMratiot(:,3),30,[0 1 0],'filled'); 
+plot([0 5],[0 5],'k','LineWidth',2); axis([0 5 0 5])
+plot([meansgd(1) meansgt(1)],[meansgd(3) meansgt(3)],'r+','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
 title('P(GM<.1)/P(GM>.9)'); subtitle('1 Gaussian'); grid on; axis square
-subplot(2,3,4); plot([0 5],[0 5],'k','LineWidth',2);
-hold on; scatter(GMratiod(:,2),GMratiod(:,4),30,[0 0 1],'filled'); 
-scatter(GMratiot(:,2),GMratiot(:,4),30,[0 1 0],'filled');
-plot([meansgd(2) meansgt(2)],[meansgd(4) meansgt(4)],'r*','LineWidth',3)
+subplot(2,3,4); scatter(GMratiod(:,2),GMratiod(:,4),30,[0 0 1],'filled'); 
+hold on; scatter(GMratiot(:,2),GMratiot(:,4),30,[0 1 0],'filled');
+plot([0 5],[0 5],'k','LineWidth',2); axis([0 5 0 5])
+plot([meansgd(2) meansgt(2)],[meansgd(4) meansgt(4)],'r+','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
-subtitle('2 Gaussians'); grid on; axis square; axis([0 5 0 5])
-
-subplot(2,3,2);plot([0 110],[0 110],'k','LineWidth',2);
-hold on; scatter(WMratiod(:,1),WMratiod(:,3),30,[0 0 1],'filled'); 
-scatter(WMratiot(:,1),WMratiot(:,3),30,[0 1 0],'filled'); axis([0 110 0 110])
-plot([meanswd(1) meanswt(1)],[meanswd(3) meanswt(3)],'r*','LineWidth',3)
+subtitle('2 Gaussians'); grid on; axis square; 
+subplot(2,3,2); scatter(WMratiod(:,1),WMratiod(:,3),30,[0 0 1],'filled'); 
+hold on; scatter(WMratiot(:,1),WMratiot(:,3),30,[0 1 0],'filled'); 
+plot([0 110],[0 110],'k','LineWidth',2); axis([0 110 0 110])
+plot([meanswd(1) meanswt(1)],[meanswd(3) meanswt(3)],'r+','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
 title('P(WM<.1)/P(WM>.9)'); subtitle('1 Gaussian'); grid on; axis square
-subplot(2,3,5); plot([0 110],[0 110],'k','LineWidth',2);
-hold on; scatter(WMratiod(:,2),WMratiod(:,4),30,[0 0 1],'filled'); 
-scatter(WMratiot(:,2),WMratiot(:,4),30,[0 1 0],'filled');
-plot([meanswd(2) meanswt(2)],[meanswd(4) meanswt(4)],'r*','LineWidth',3)
+subplot(2,3,5); scatter(WMratiod(:,2),WMratiod(:,4),30,[0 0 1],'filled'); 
+hold on; scatter(WMratiot(:,2),WMratiot(:,4),30,[0 1 0],'filled');
+plot([0 110],[0 110],'k','LineWidth',2); axis([0 110 0 110])
+plot([meanswd(2) meanswt(2)],[meanswd(4) meanswt(4)],'r+','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
-subtitle('2 Gaussians'); grid on; axis square; axis([0 110 0 110])
-
-subplot(2,3,3);plot([0 30],[0 30],'k','LineWidth',2);
-hold on; scatter(CSFratiod(:,1),CSFratiod(:,3),30,[0 0 1],'filled'); 
-scatter(CSFratiot(:,1),CSFratiot(:,3),30,[0 1 0],'filled'); axis([0 30 0 30])
-plot([meanscd(1) meansct(1)],[meanscd(3) meansct(3)],'r*','LineWidth',3)
+subtitle('2 Gaussians'); grid on; axis square;
+subplot(2,3,3);scatter(CSFratiod(:,1),CSFratiod(:,3),30,[0 0 1],'filled'); 
+hold on; scatter(CSFratiot(:,1),CSFratiot(:,3),30,[0 1 0],'filled'); 
+plot([0 30],[0 30],'k','LineWidth',2);axis([0 30 0 30])
+plot([meanscd(1) meansct(1)],[meanscd(3) meansct(3)],'r+','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
 title('P(CSF<.1)/P(CSF>.9)'); subtitle('1 Gaussian'); grid on; axis square
-subplot(2,3,6); plot([0 30],[0 30],'k','LineWidth',2);
-hold on; scatter(CSFratiod(:,2),CSFratiod(:,4),30,[0 0 1],'filled'); 
-scatter(CSFratiot(:,2),CSFratiot(:,4),30,[0 1 0],'filled');
-plot([meanscd(2) meansct(2)],[meanscd(4) meansct(4)],'r*','LineWidth',3)
+subplot(2,3,6); scatter(CSFratiod(:,2),CSFratiod(:,4),30,[0 0 1],'filled'); 
+hold on; scatter(CSFratiot(:,2),CSFratiot(:,4),30,[0 1 0],'filled');
+plot([0 30],[0 30],'k','LineWidth',2); axis([0 30 0 30])
+plot([meanscd(2) meansct(2)],[meanscd(4) meansct(4)],'r+','LineWidth',3)
 xlabel('prob ratio using T1w only'); ylabel(' prob ratio using T1w and T2w');
-subtitle('2 Gaussians'); grid on; axis square; axis([0 30 0 30])
+subtitle('2 Gaussians'); grid on; axis square; 
 
 
 % put those ratios back into percentages context, it is the numerator or
@@ -947,7 +945,7 @@ labels = {'Putamen','Caudate','Nuc. Acumbens','Ext Amygdala',...
     'Ventral tegmentum','Ventral Pallidum','Habernular nuclei',...
     'Hypothalamus','Mammilary Nucleus','Subthalamic nucleus'};
 
-% fist plot the data as the prob of a tissue as a function os the prob of
+% plot the data as the prob of a tissue as a function of the prob of
 % the atlas -- along the way get some estimates to be used for the ratio
 % analysis
 for dataset=1:2
@@ -971,17 +969,21 @@ for dataset=1:2
         for nuclei = size(labels,2):-1:1
             tmp = cellfun(@(x) squeeze(size(x,1)), GMnv.T1nG1{nuclei}); 
             tmp(tmp==0)= []; sample(nuclei) = min(tmp); % takes care of the NaN in nuclei 13
+            
             % compute the mean value for same number of voxels in each atlas prob.
             tmp  = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
             data(:,:,tissue,1) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
             [Mp(nuclei,1,:),CIv(nuclei,1,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,1)));
-            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
+            
+            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T12nG1{nuclei}, 'UniformOutput', false);
             data(:,:,tissue,2) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
             [Mp(nuclei,2,:),CIv(nuclei,2,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,2)));
-            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
+            
+            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG2{nuclei}, 'UniformOutput', false);
             data(:,:,tissue,3) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
             [Mp(nuclei,3,:),CIv(nuclei,3,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,3)));
-            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T1nG1{nuclei}, 'UniformOutput', false);
+            
+            tmp = cellfun(@(x) squeeze(mean(x(randi(sample(nuclei),size(x,1),1),:,:),1)), GMnv.T12nG2{nuclei}, 'UniformOutput', false);
             data(:,:,tissue,4) = cell2mat(cellfun(@(x) x(:,tissue),tmp,'UniformOutput',false));
             [Mp(nuclei,4,:),CIv(nuclei,4,:,:)] = rst_trimmean(squeeze(data(:,:,tissue,4)));
 
@@ -1025,6 +1027,7 @@ for dataset=1:2
     clear data
 end
 
+% plot the ratios
 for dataset=1:2
     figure
     for nuclei=1:16
@@ -1050,9 +1053,7 @@ for dataset=1:2
         title(sprintf('%s\n sample=%g voxels',labels{nuclei},sample(nuclei)));
         grid on; xticks(1:9); xticklabels({'.1','.2','.3','.4','.5','.6','.7','.8','.9'});
         if nuclei == 1 || nuclei == 5 || nuclei == 9 || nuclei == 13
-            if tissue == 1, ylabel('GM density');
-            elseif tissue == 2, ylabel('WM density');
-            else, ylabel('CSF density'); end
+            ylabel('Probability ratio');
         end
         if nuclei >= 13
             xlabel('atlas probability')
