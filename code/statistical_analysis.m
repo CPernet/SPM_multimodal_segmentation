@@ -117,6 +117,7 @@ title('White Matter test set','Fontsize',12); ylabel('WM volumes'); axis([0.1 5.
 [CSFt_est, CIt_CSF,~,K6] = rst_data_plot(CSFt{:,:}.*1000, 'estimator','trimmed mean','newfig','sub');
 title('CSF test set','Fontsize',12); ylabel('CSF volumes'); axis([0.1 5.9 90 430]);
 
+
 % complete figure 1 using scatter plots and kernel density estimates
 figure(findobj( 'Type', 'Figure', 'Name', 'Tissue volumes' ));
 
@@ -174,12 +175,31 @@ summary = table([TIVd_CI(1,1) TIVd_est(1) TIVd_CI(2,1); TIVt_CI(1,1) TIVt_est(1)
     'RowNames',{'TIV discovery','TIV test'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 disp(summary); 
 
+condition = {'T1-1G','T1-2G','T12-1G','T12-2G'};
+for test = 1:4
+    out = intersect(linspace(TIVd_CI(1,test),TIVd_CI(2,test)),linspace(TIVt_CI(1,test),TIVt_CI(2,test)));
+    if isempty(out)
+        fprintf('non overlap of TIV HDI for %s\n',condition{test})
+    else
+        warning('overlap of TIV HDI for %s',condition{test})
+    end
+end
+
 summary = table([CId_GM(1,1) GMd_est(1) CId_GM(2,1); CIt_GM(1,1) GMt_est(1) CIt_GM(2,1)],...
     [CId_GM(1,2) GMd_est(2) CId_GM(2,2); CIt_GM(1,2) GMt_est(2) CIt_GM(2,2)],...
     [CId_GM(1,3) GMd_est(3) CId_GM(2,3); CIt_GM(1,3) GMt_est(3) CIt_GM(2,3)],...
     [CId_GM(1,4) GMd_est(4) CId_GM(2,4); CIt_GM(1,4) GMt_est(4) CIt_GM(2,4)],...
     'RowNames',{'GM discovery','GM test'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 disp(summary); 
+
+for test = 1:4
+    out = intersect(linspace(CId_GM(1,test),CId_GM(2,test)),linspace(CIt_GM(1,test),CIt_GM(2,test)));
+    if isempty(out)
+        fprintf('non overlap of GM HDI for %s\n',condition{test})
+    else
+        warning('overlap of TIV GM for %s',condition{test})
+    end
+end
 
 summary = table([CId_WM(1,1) WMd_est(1) CId_WM(2,1); CIt_WM(1,1) WMt_est(1) CIt_WM(2,1)],...
     [CId_WM(1,2) WMd_est(2) CId_WM(2,2); CIt_WM(1,2) WMt_est(2) CIt_WM(2,2)],...
@@ -188,12 +208,30 @@ summary = table([CId_WM(1,1) WMd_est(1) CId_WM(2,1); CIt_WM(1,1) WMt_est(1) CIt_
     'RowNames',{'WM discovery','WM test'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 disp(summary); 
 
+for test = 1:4
+    out = intersect(linspace(CId_WM(1,test),CId_WM(2,test)),linspace(CIt_WM(1,test),CIt_WM(2,test)));
+    if isempty(out)
+        fprintf('non overlap of WM HDI for %s\n',condition{test})
+    else
+        warning('overlap of TIV WM for %s',condition{test})
+    end
+end
+
 summary = table([CId_CSF(1,1) CSFd_est(1) CId_CSF(2,1); CIt_CSF(1,1) CSFt_est(1) CIt_CSF(2,1)],...
     [CId_CSF(1,2) CSFd_est(2) CId_CSF(2,2); CIt_CSF(1,2) CSFt_est(2) CIt_CSF(2,2)],...
     [CId_CSF(1,3) CSFd_est(3) CId_CSF(2,3); CIt_CSF(1,3) CSFt_est(3) CIt_CSF(2,3)],...
     [CId_CSF(1,4) CSFd_est(4) CId_CSF(2,4); CIt_CSF(1,4) CSFt_est(4) CIt_CSF(2,4)],...
     'RowNames',{'CSF discovery','CSF test'},'VariableNames',{'T1_nG1','T1_nG2','T12_nG1','T12_nG2'});
 disp(summary); 
+
+for test = 1:4
+    out = intersect(linspace(CId_CSF(1,test),CId_CSF(2,test)),linspace(CIt_CSF(1,test),CIt_CSF(2,test)));
+    if isempty(out)
+        fprintf('non overlap of CSF HDI for %s\n',condition{test})
+    else
+        warning('overlap of TIV CSF for %s',condition{test})
+    end
+end
 
 % ------------------------------------------------------
 %% 2. what the effect on total intracranial volume (TIV) 
@@ -243,6 +281,17 @@ summary = table([CId_diff(1,1) TIVd_diff(1) CId_diff(2,1); CIt_diff(1,1) TIVt_di
     [CId_diff(1,4) TIVd_diff(4) CId_diff(2,4); CIt_diff(1,4) TIVt_diff(4) CIt_diff(2,4)],...
     'RowNames',{'diff discovery','diff test'},'VariableNames',{'T1 G2-G1','T12 G2-G1','G1 T12-T1','G2 T12-T1'});
 disp(summary); 
+
+condition = {'T1 G2-G1','T12 G2-G1','G1 T12-T1','G2 T12-T1'};
+for test = 1:4
+    out = intersect(linspace(CId_diff(1,test),CId_diff(2,test)),linspace(CIt_diff(1,test),CIt_diff(2,test)));
+    if isempty(out)
+        fprintf('non overlap of volume difference HDI for %s\n',condition{test})
+    else
+        warning('overlap of volume difference CSF for %s',condition{test})
+    end
+end
+
 
 % find subjects with average effect to illustrate 
 % tmp = (abs(Data1) - abs(TIVd_diff));
