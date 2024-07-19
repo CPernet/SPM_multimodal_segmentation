@@ -1076,14 +1076,26 @@ for dataset=1:2
     clear data
 end
 
+% do some ranking 
+for nuclei=1:16
+    mean_GMpd(nuclei)  = nanmean(GMpd{nuclei}(:));
+    mean_WMpd(nuclei)  = nanmean(WMpd{nuclei}(:));
+    mean_CSFpd(nuclei) = nanmean(CSFpd{nuclei}(:));
+    mean_GMpv(nuclei)  = nanmean(GMpv{nuclei}(:));
+    mean_WMpv(nuclei)  = nanmean(WMpv{nuclei}(:));
+    mean_CSFpv(nuclei) = nanmean(CSFpv{nuclei}(:));
+end
+[v,o]  = sort(mean_GMpd,'descend');
+[v2,o2]= sort(mean_GMpv,'descend');
+
 % plot the ratios
 for dataset=1:2
     figure
-    for nuclei=1:16
+    for nuclei=1:16 % o
         if dataset == 1
-            ratio = (WMpd{nuclei}+CSFpd{nuclei})./GMpd{nuclei};
+            ratio = GMpd{o(nuclei)}./(WMpd{o(nuclei)}+CSFpd{o(nuclei)});
         else
-            ratio = (WMpv{nuclei}+CSFpv{nuclei})./GMpv{nuclei};
+            ratio = GMpv{o2(nuclei)}./(WMpv{o2(nuclei)}+CSFpv{o2(nuclei)});
         end
         subplot(4,4,nuclei);
         for cond = 1:4
@@ -1099,7 +1111,11 @@ for dataset=1:2
                 set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
             end
         end
-        title(sprintf('%s\n sample=%g voxels',labels{nuclei},sample(nuclei)));
+        if dataset == 1
+            title(sprintf('%s\n sample=%g voxels',labels{o(nuclei)},sample(o(nuclei))));
+        else
+            title(sprintf('%s\n sample=%g voxels',labels{o2(nuclei)},sample(o2(nuclei))));
+        end
         grid on; xticks(1:9); xticklabels({'.1','.2','.3','.4','.5','.6','.7','.8','.9'});
         if nuclei == 1 || nuclei == 5 || nuclei == 9 || nuclei == 13
             ylabel('Probability ratio');
