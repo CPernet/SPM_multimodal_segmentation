@@ -25,8 +25,9 @@ function [TM,CI] = rst_trimmean(varargin)
 
 %% check arguments and data
 
-data = varargin{1};
+data    = varargin{1};
 percent = 20/100; % default
+alphav  = 5/100;
 
 if nargin>3
     error('too many arguments')
@@ -68,12 +69,13 @@ for c=p:-1:1
 
     %% add robust CI
     if nargout > 1
+        alphav = alphav / p; % Bonferoni adjustment
         if K ~=0
             [tv,g]  = tvar(tmp,percent*100); % trimmed squared standard error + g trimmed elements
             se      = sqrt(tv);              % trimmed standard error
             df      = N - 2.*g - 1;          % n-2g = number of observations left after trimming
-            CI(1,c) = TM(c)+tinv(percent./2,df).*se;
-            CI(2,c) = TM(c)-tinv(percent./2,df).*se;
+            CI(1,c) = TM(c)+tinv(alphav./2,df).*se;
+            CI(2,c) = TM(c)-tinv(alphav./2,df).*se;
         else
             CI(1,c) = NaN;
             CI(2,c) = NaN;
