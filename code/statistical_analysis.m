@@ -94,7 +94,8 @@ TIVt = [GMt{:,1}+WMt{:,1}+CSFt{:,1} GMt{:,2}+WMt{:,2}+CSFt{:,2} ...
     GMt{:,3}+WMt{:,3}+CSFt{:,3} GMt{:,4}+WMt{:,4}+CSFt{:,4}].*1000;
 
 % start figure for TIV and get estimates
-figure('Name','Tissue volumes'); subplot(6,13,[1 2 3 13+1 13+2 13+3 26+1 26+2 26+3]);
+figure('Name','Figure 1: Tissue volumes','NumberTitle','off'); 
+subplot(6,13,[1 2 3 13+1 13+2 13+3 26+1 26+2 26+3]);
 [TIVd_est, TIVd_CI]   = rst_data_plot(TIVd, 'estimator','trimmed mean','newfig','sub');
 title('TIV discovery set','Fontsize',12); ylabel('volumes'); axis([0.1 5.9 990 1890])
 subplot(6,13,[39+1 39+2 39+3 52+1 52+2 52+3 65+1 65+2 65+3]);
@@ -103,7 +104,7 @@ title('TIV validation set','Fontsize',12); ylabel('volumes'); axis([0.1 5.9 990 
 xlabel('T1-1G T1-2G T12-1G T12-2G'); 
 
 % get estimates for GM, WM and CSF, make a supplementary figure
-figure('Name','Tissue Class volumes'); subplot(2,3,1);
+figure('Name','Sup Figure 1: Tissue Class volumes','NumberTitle','off'); subplot(2,3,1);
 [GMd_est, CId_GM,~,K1]   = rst_data_plot(GMd{:,:}.*1000, 'estimator','trimmed mean','newfig','sub');
 title('Grey Matter discovery set','Fontsize',12); ylabel('GM volumes'); axis([0.1 5.9 490 990]); subplot(2,3,2);
 [WMd_est, CId_WM,~,K2]   = rst_data_plot(WMd{:,:}.*1000, 'estimator','trimmed mean','newfig','sub');
@@ -117,9 +118,8 @@ title('White Matter test set','Fontsize',12); ylabel('WM volumes'); axis([0.1 5.
 [CSFt_est, CIt_CSF,~,K6] = rst_data_plot(CSFt{:,:}.*1000, 'estimator','trimmed mean','newfig','sub');
 title('CSF test set','Fontsize',12); ylabel('CSF volumes'); axis([0.1 5.9 90 430]);
 
-
 % complete figure 1 using scatter plots and kernel density estimates
-figure(findobj( 'Type', 'Figure', 'Name', 'Tissue volumes' ));
+figure(findobj( 'Type', 'Figure', 'Name', 'Figure 1: Tissue volumes'));
 
 % discovery
 gp = [repmat({'1 Gaussian'},size(GMd,1),1);repmat({'2 Gaussians'},size(GMd,1),1)]; 
@@ -177,7 +177,9 @@ disp(summary);
 
 condition = {'T1-1G','T1-2G','T12-1G','T12-2G'};
 for test = 1:4
-    out = intersect(linspace(TIVd_CI(1,test),TIVd_CI(2,test)),linspace(TIVt_CI(1,test),TIVt_CI(2,test)));
+    A = linspace(TIVd_CI(1,test),TIVd_CI(2,test));
+    B = linspace(TIVt_CI(1,test),TIVt_CI(2,test));
+    out = intersect(round(A,4),round(B,4)); % round to 4th decimal place
     if isempty(out)
         fprintf('non overlap of TIV HDI for %s\n',condition{test})
     else
@@ -193,7 +195,9 @@ summary = table([CId_GM(1,1) GMd_est(1) CId_GM(2,1); CIt_GM(1,1) GMt_est(1) CIt_
 disp(summary); 
 
 for test = 1:4
-    out = intersect(linspace(CId_GM(1,test),CId_GM(2,test)),linspace(CIt_GM(1,test),CIt_GM(2,test)));
+    A = linspace(CId_GM(1,test),CId_GM(2,test));
+    B = linspace(CIt_GM(1,test),CIt_GM(2,test));
+    out = intersect(round(A,4),round(B,4));
     if isempty(out)
         fprintf('non overlap of GM HDI for %s\n',condition{test})
     else
@@ -209,7 +213,9 @@ summary = table([CId_WM(1,1) WMd_est(1) CId_WM(2,1); CIt_WM(1,1) WMt_est(1) CIt_
 disp(summary); 
 
 for test = 1:4
-    out = intersect(linspace(CId_WM(1,test),CId_WM(2,test)),linspace(CIt_WM(1,test),CIt_WM(2,test)));
+    A = linspace(CId_WM(1,test),CId_WM(2,test));
+    B = linspace(CIt_WM(1,test),CIt_WM(2,test));
+    out = intersect(round(A,4),round(B,4));
     if isempty(out)
         fprintf('non overlap of WM HDI for %s\n',condition{test})
     else
@@ -225,7 +231,9 @@ summary = table([CId_CSF(1,1) CSFd_est(1) CId_CSF(2,1); CIt_CSF(1,1) CSFt_est(1)
 disp(summary); 
 
 for test = 1:4
-    out = intersect(linspace(CId_CSF(1,test),CId_CSF(2,test)),linspace(CIt_CSF(1,test),CIt_CSF(2,test)));
+    A = linspace(CId_CSF(1,test),CId_CSF(2,test));
+    B = linspace(CIt_CSF(1,test),CIt_CSF(2,test));
+    out = intersect(round(A,4),round(B,4));
     if isempty(out)
         fprintf('non overlap of CSF HDI for %s\n',condition{test})
     else
@@ -269,12 +277,11 @@ warning('adding 1 Gaussian increases TIV by %g',mean(rst_trimmean(TIVt(:,[2 4])-
 warning('adding a T2 image decreases TIV by %g',mean(rst_trimmean(TIVt(:,[3 4])-TIVt(:,[1 2]))));
 
 % estimates of differences for effect sizes
-figure('Name','TIV differences'); subplot(1,2,1);
+figure('Name','Sup Figure 2: TIV differences','NumberTitle','off'); subplot(1,2,1);
 [TIVd_diff, CId_diff]   = rst_data_plot(Data1, 'estimator','trimmed mean','newfig','sub');
 title('TIV differences discovery set','Fontsize',12); ylabel('TIV'); axis([0.1 5.9 -140 40]); subplot(1,2,2);
 [TIVt_diff, CIt_diff]   = rst_data_plot(Data2, 'estimator','trimmed mean','newfig','sub');
 title('TIV differences validation set','Fontsize',12); ylabel('TIV'); axis([0.1 5.9 -140 40]);
-
 summary = table([CId_diff(1,1) TIVd_diff(1) CId_diff(2,1); CIt_diff(1,1) TIVt_diff(1) CIt_diff(2,1)],...
     [CId_diff(1,2) TIVd_diff(2) CId_diff(2,2); CIt_diff(1,2) TIVt_diff(2) CIt_diff(2,2)],...
     [CId_diff(1,3) TIVd_diff(3) CId_diff(2,3); CIt_diff(1,3) TIVt_diff(3) CIt_diff(2,3)],...
@@ -291,7 +298,6 @@ for test = 1:4
         warning('overlap of volume difference CSF for %s',condition{test})
     end
 end
-
 
 % find subjects with average effect to illustrate 
 % tmp = (abs(Data1) - abs(TIVd_diff));
@@ -345,7 +351,7 @@ fprintf('and %g ml in the ''other'' class\n', ...
 %% 3. what the effect on the different tissue types and their relationships
 % ------------------------------------------------------------------------
 
-figure('Name','Tissue volume differences'); 
+figure('Name','Sup Figure 3: Tissue volume differences','NumberTitle','off'); 
 
 % Grey Matter
 % ------------
@@ -361,12 +367,19 @@ title('GM differences validation set','Fontsize',12);
 result = rst_rep_anova_T2(GMd{:,:},scanner,[2 2],1000,{'modality','n_gaussians'});
 warning('significant effect of modality, nb of gaussians AND interaction') 
 [GMdmeans, GMdCI] = rst_rep_anova_plot(GMd{:,:},ones(259,1),[2 2],3);
+title('GM discovery modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 4: GM volume interaction','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
 disp(result.repeated_measure)
 disp('-----')
 [~,~,GMd_p,~,h1] = rst_multicompare(GMd{:,:}.*1000,[3 1; 4 2], 'estimator', 'trimmed mean','newfig','no');
 fprintf('GM volumes differences by adding T2: %g for 1 Gaussians p=%g, %g for 2 Gaussians p=%g\n',...
     GMd_diff(3),GMd_p(1),GMd_diff(4),GMd_p(2))
-[h1,CIx,GMd_p] = rst_1ttest((GMt{:,3}-GMt{:,1})-(GMt{:,4}-GMt{:,2})*1000,'trimmean');
+[h1,CIx,GMd_p] = rst_1ttest((GMt{:,3}-GMt{:,1})-(GMt{:,4}-GMt{:,2})*1000,'trimmean','figure','off');
 fprintf('interation effect does not replicate %g\n',GMd_p)
 disp('-----')
 disp('no group effect')
@@ -379,7 +392,7 @@ disp(result.interaction)
 
 % White matter
 % -----------
-figure(findobj( 'Type', 'Figure', 'Name', 'Tissue volume differences' ));
+figure(findobj( 'Type', 'Figure', 'Name', 'Sup Figure 3: Tissue volume differences' ));
 subplot(2,3,2);
 Data = [WMd{:,2}-WMd{:,1}, WMd{:,4}-WMd{:,3}, WMd{:,3}-WMd{:,1}, WMd{:,4}-WMd{:,2}].*1000;
 [WMd_diff, CIWMd_diff]   = rst_data_plot(Data, 'estimator','trimmed mean','newfig','sub');
@@ -392,12 +405,19 @@ title('WM differences validation set','Fontsize',12);
 result = rst_rep_anova_T2(WMd{:,:},scanner,[2 2],1000,{'modality','n_gaussians'});
 warning('significant effect of modality, nb of gaussians AND interaction') 
 [WMdmeans, WMdCI] = rst_rep_anova_plot(WMd{:,:},ones(259,1),[2 2],3);
+title('WM discovery modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 5: WM volume interaction','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
 disp(result.repeated_measure)
 disp('-----')
 [~,~,WMd_p,~,h2] = rst_multicompare(WMd{:,:}.*1000,[3 1; 4 2], 'estimator', 'trimmed mean','newfig','no');
 fprintf('WM volumes differences by adding T2: %g for 1 Gaussians p=%g, %g for 2 Gaussians p=%g\n', ...
     WMd_diff(3),WMd_p(1),WMd_diff(4),WMd_p(2))
-[h2,CIx,WMd_p] = rst_1ttest((WMt{:,3}-WMt{:,1})-(WMt{:,4}-WMt{:,2})*1000,'trimmean');
+[h2,CIx,WMd_p] = rst_1ttest((WMt{:,3}-WMt{:,1})-(WMt{:,4}-WMt{:,2})*1000,'trimmean','figure','off');
 fprintf('interation effect does not replicate %g\n',WMd_p)
 disp('-----')
 disp('no group effect')
@@ -410,7 +430,7 @@ disp(result.interaction)
 
 % CSF
 % ---
-figure(findobj( 'Type', 'Figure', 'Name', 'Tissue volume differences' ));
+figure(findobj( 'Type', 'Figure', 'Name', 'Sup Figure 3: Tissue volume differences' ));
 subplot(2,3,3);
 Data = [CSFd{:,2}-CSFd{:,1}, CSFd{:,4}-CSFd{:,3}, CSFd{:,3}-CSFd{:,1}, CSFd{:,4}-CSFd{:,2}].*1000;
 [CSFd_diff, CICSFd_diff]   = rst_data_plot(Data, 'estimator','trimmed mean','newfig','sub');
@@ -423,12 +443,19 @@ title('CSF differences validation set','Fontsize',12);
 result = rst_rep_anova_T2(CSFd{:,:},scanner,[2 2],1000,{'modality','n_gaussians'});
 warning('significant effect of modality, nb of gaussians AND interaction') 
 [CSFdmeans, CSFdCI] = rst_rep_anova_plot(CSFd{:,:},ones(259,1),[2 2],3);
+title('CSF discovery modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 6: CSF volume interaction','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
 disp(result.repeated_measure)
 disp('-----')
 [~,~,CSFd_p,~,h3] = rst_multicompare(CSFd{:,:}.*1000,[3 1; 4 2], 'estimator', 'trimmed mean','newfig','no');
 fprintf('CSF volumes differences by adding T2: %g for 1 Gaussians p=%g, %g for 2 Gaussians p=%g\n', ...
     CSFd_diff(3),CSFd_p(1),CSFd_diff(4),CSFd_p(2))
-[h3,CIx,CSFd_p] = rst_1ttest((WMt{:,3}-WMt{:,1})-(WMt{:,4}-WMt{:,2})*1000,'trimmean');
+[h3,CIx,CSFd_p] = rst_1ttest((WMt{:,3}-WMt{:,1})-(WMt{:,4}-WMt{:,2})*1000,'trimmean','Figure','off');
 fprintf('interation effect does not replicate %g\n',CSFd_p)
 disp('-----')
 disp('no group effect')
@@ -533,7 +560,7 @@ warning('Validation dataset'); disp(summary2);
 Datad            = [GMd{:,3}-GMd{:,1},WMd{:,3}-WMd{:,1},CSFd{:,3}-CSFd{:,1}];
 [BICS,BESTMODEL] = mbclust(Datad,8);
 
-figure('Name','Guassian Mixture Modelling')
+figure('Name','Figure 3: Gaussian Mixture Modelling','NumberTitle','off');
 subplot(2,5,1); plotbic(BICS); grid on; box on; axis square; axis([0.5 8.5 3800 4900]);
 [class1,uncertainty] = mixclass(Datad,BESTMODEL.pies,BESTMODEL.mus,BESTMODEL.vars);
 C   = zeros(length(class1),3);
@@ -721,16 +748,17 @@ for data_type = 1:3
 
     if data_type == 1
         dd = GMdd; td = GMtd;
+        figure('Name','Figure 4A: Shift function GM','NumberTitle','off');
         hy = -0.14;
         ax = [0.5 9.5 -0.15 0.1];
     elseif data_type == 2
         dd = WMdd; td = WMtd;
-        figure('Name','Shift function WM');
+        figure('Name','Figure 4B: Shift function WM','NumberTitle','off');
         hy = -0.18;
         ax = [0.5 9.5 -0.20 0.05];
     else
         dd = CSFdd; td = CSFtd;
-        figure('Name','Shift function CSF');
+        figure('Name','Figure 4C: Shift function CSF','NumberTitle','off');
         hy = -0.38;
         ax = [0.5 9.5 -0.4 0.2];
     end
@@ -840,6 +868,13 @@ GMratiod  = [notGMdv{:,[1 2]} ./ GMdv{:,[1 2]} ,notGMdv{:,[3 4]} ./ GMdv{:,[3 4]
 GMratiot  = [notGMtv{:,[1 2]} ./ GMtv{:,[1 2]} ,notGMtv{:,[3 4]} ./ GMtv{:,[3 4]}];
 result    = rst_rep_anova_T2(GMratiod,scanner,[2 2],1000,{'modality','n_gaussians'});
 meansgd   = rst_rep_anova_plot(GMratiod,ones(259,1),[2 2],3);
+title('GM Ratio on vessels: modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 7: GM ratio on vessels - discovery dataset','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
 disp('significant effects')
 disp(result.repeated_measure); 
 
@@ -847,7 +882,14 @@ disp(result.repeated_measure);
 fprintf('Adding T2w images increases the GM ratio when using 1 Gaussian [%g %g] p=%g but decreases it with 2 Gaussians [%g %g] p=%g\n', ...
     ci(1,1), ci(2,1), p(1), ci(1,2), ci(2,2), p(2));
 meansgt   = rst_rep_anova_plot(GMratiot,ones(87,1),[2 2],3);
-[h,~,p]   = rst_1ttest((GMratiot(:,3)-GMratiot(:,1))-(GMratiot(:,4)-GMratiot(:,2)),'trimmean');
+title('GM Ratio on vessels: modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 8: GM ratio on vessels - validation dataset','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
+[h,~,p]   = rst_1ttest((GMratiot(:,3)-GMratiot(:,1))-(GMratiot(:,4)-GMratiot(:,2)),'trimmean','figure','off');
 [~,ci]    = rst_trimmean([GMratiot(:,3)-GMratiot(:,1), GMratiot(:,4)-GMratiot(:,2)]);
 fprintf('interation effect replicates p=%g\n although only 1 Gaussian case shows an increase [%g %g] vs [%g %g]', ...
     p, ci(1,1), ci(2,1), ci(1,2), ci(2,2));
@@ -861,6 +903,13 @@ WMratiod  = [notWMdv{:,[1 2]} ./ WMdv{:,[1 2]} ,notWMdv{:,[3 4]} ./ WMdv{:,[3 4]
 WMratiot  = [notWMtv{:,[1 2]} ./ WMtv{:,[1 2]} ,notWMtv{:,[3 4]} ./ WMtv{:,[3 4]}];
 result    = rst_rep_anova_T2(WMratiod,scanner,[2 2],1000,{'modality','n_gaussians'});
 meanswd   = rst_rep_anova_plot(WMratiod,ones(259,1),[2 2],3);
+title('WM Ratio on vessels: modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 9: WM ratio on vessels - discovery dataset','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
 disp('significant effects')
 disp(result.repeated_measure); 
 
@@ -868,7 +917,14 @@ disp(result.repeated_measure);
 fprintf('Adding T2w images always increases the WM ratio: 1 Gaussian [%g %g] p=%g, 2 Gaussians [%g %g] p=%g\n', ...
     ci(1,1), ci(2,1), p(1), ci(1,2), ci(2,2), p(2));
 meanswt   = rst_rep_anova_plot(WMratiot,ones(87,1),[2 2],3);
-[h,~,p]   = rst_1ttest((WMratiot(:,3)-WMratiot(:,1))-(WMratiot(:,4)-WMratiot(:,2)),'trimmean');
+title('WM Ratio on vessels: modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 10: WM ratio on vessels - validation dataset','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
+[h,~,p]   = rst_1ttest((WMratiot(:,3)-WMratiot(:,1))-(WMratiot(:,4)-WMratiot(:,2)),'trimmean','figure','off');
 [~,ci]    = rst_trimmean([WMratiot(:,3)-WMratiot(:,1), WMratiot(:,4)-WMratiot(:,2)]);
 fprintf('interation effect replicates p=%g\n although only 1 Gaussian case shows an increase [%g %g] vs [%g %g]', ...
     p, ci(1,1), ci(2,1), ci(1,2), ci(2,2));
@@ -882,6 +938,13 @@ CSFratiod = [notCSFdv{:,[1 2]} ./ CSFdv{:,[1 2]} ,notCSFdv{:,[3 4]} ./ CSFdv{:,[
 CSFratiot = [notCSFtv{:,[1 2]} ./ CSFtv{:,[1 2]} ,notCSFtv{:,[3 4]} ./ CSFtv{:,[3 4]}];
 result    = rst_rep_anova_T2(CSFratiod,scanner,[2 2],1000,{'modality','n_gaussians'});
 meanscd   = rst_rep_anova_plot(CSFratiod,ones(259,1),[2 2],3);
+title('CSF Ratio on vessels: modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 11: CSF ratio on vessels - discovery dataset','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
 disp('significant effects')
 disp(result.repeated_measure); 
 
@@ -889,7 +952,14 @@ disp(result.repeated_measure);
 fprintf('Adding T2w images always increases the CSF ratio: 1 Gaussian [%g %g] p=%g, 2 Gaussians [%g %g] p=%g\n', ...
     ci(1,1), ci(2,1), p(1), ci(1,2), ci(2,2), p(2));
 meansct  = rst_rep_anova_plot(CSFratiot,ones(87,1),[2 2],3);
-[h,~,p]  = rst_1ttest((CSFratiot(:,3)-CSFratiot(:,1))-(CSFratiot(:,4)-CSFratiot(:,2)),'trimmean');
+title('CSF Ratio on vessels: modality x parametrisation interaction')
+subtitle(sprintf('F(%g,%g)=%g p=%g',...
+    result.repeated_measure.df(1,3),result.repeated_measure.df(2,3),...
+    result.repeated_measure.F(3),result.repeated_measure.pboot(3)))
+set(gcf,'Name','Sup Figure 12: CSF ratio on vessels - validation dataset','NumberTitle','off');
+xlabel('Modality'); xticks([1 2]); xticklabels({'T1w','T1w+T2w'}); 
+legend('1 Gaussian','2 Gaussians'); 
+[h,~,p]  = rst_1ttest((CSFratiot(:,3)-CSFratiot(:,1))-(CSFratiot(:,4)-CSFratiot(:,2)),'trimmean','Figure','off');
 [~,ci]   = rst_trimmean([CSFratiot(:,3)-CSFratiot(:,1), CSFratiot(:,4)-CSFratiot(:,2)]);
 fprintf('interation effect replicates p=%g\n 1 Gaussian case [%g %g], 2 Gausians [%g %g]', ...
     p, ci(1,1), ci(2,1), ci(1,2), ci(2,2));
@@ -899,7 +969,7 @@ disp(result.gp);
 disp('but scanner interacts with the metric')
 disp(result.interaction)
 
-figure('Name','ratio tests'); 
+figure('Name','Figure 5: ratio tests','NumberTitle','off');
 subplot(2,3,1); scatter(GMratiod(:,1),GMratiod(:,3),30,[0 0 1],'filled'); 
 hold on; scatter(GMratiot(:,1),GMratiot(:,3),30,[0 1 0],'filled'); 
 plot([0 5],[0 5],'k','LineWidth',2); axis([0 5 0 5])
@@ -1011,9 +1081,15 @@ for dataset=1:2
     end
 
     for tissue = 1:3
-        if tissue == 1, figure('Name','GM');
-        elseif tissue == 2, figure('Name','WM');
-        else, figure('Name','CSF'); end
+        if dataset==1
+            if tissue == 1, figure('Name','Sup Figure 13A: GM prob in nuclei - discovery dataset','NumberTitle','off');
+            elseif tissue == 2, figure('Name','Sup Figure 13B: WM prob in nuclei - discovery dataset','NumberTitle','off');
+            else, figure('Name','Sup Figure 13C: CSF prob in nuclei - discovery dataset','NumberTitle','off'); end
+        else
+            if tissue == 1, figure('Name','Sup Figure 14A: GM prob in nuclei - validation dataset','NumberTitle','off');
+            elseif tissue == 2, figure('Name','Sup Figure 14B: WM prob in nuclei - validation dataset','NumberTitle','off');
+            else, figure('Name','Sup Figure 14C: CSF prob in nuclei - validation dataset','NumberTitle','off'); end
+        end
 
         for nuclei = size(labels,2):-1:1
             tmp = cellfun(@(x) squeeze(size(x,1)), GMnv.T1nG1{nuclei}); 
@@ -1076,30 +1152,26 @@ for dataset=1:2
     clear data
 end
 
-% do some ranking 
-for nuclei=1:16
-    mean_GMpd(nuclei)  = nanmean(GMpd{nuclei}(:));
-    mean_WMpd(nuclei)  = nanmean(WMpd{nuclei}(:));
-    mean_CSFpd(nuclei) = nanmean(CSFpd{nuclei}(:));
-    mean_GMpv(nuclei)  = nanmean(GMpv{nuclei}(:));
-    mean_WMpv(nuclei)  = nanmean(WMpv{nuclei}(:));
-    mean_CSFpv(nuclei) = nanmean(CSFpv{nuclei}(:));
-end
-[v,o]  = sort(mean_GMpd,'descend');
-[v2,o2]= sort(mean_GMpv,'descend');
-
 % plot the ratios
-for dataset=1:2
-    figure
-    for nuclei=1:16 % o
+% ---------------
+clear tmp
+for dataset=2:-1:1
+    if dataset == 1
+        figure('Name','Figure 6A: nuclei ratio for the discovery dataset','NumberTitle','off');
+    else
+        figure('Name','Figure 6B: nuclei ratio for the validation dataset','NumberTitle','off');
+    end
+
+    for nuclei=16:-1:1
         if dataset == 1
-            ratio = GMpd{o(nuclei)}./(WMpd{o(nuclei)}+CSFpd{o(nuclei)});
+            ratio = GMpd{nuclei}./(WMpd{nuclei}+CSFpd{nuclei});
         else
-            ratio = GMpv{o2(nuclei)}./(WMpv{o2(nuclei)}+CSFpv{o2(nuclei)});
+            ratio = GMpv{nuclei}./(WMpv{nuclei}+CSFpv{nuclei});
         end
         subplot(4,4,nuclei);
         for cond = 1:4
             [TM,CI] = rst_trimmean(squeeze(ratio(:,:,cond)));
+            tmp(cond,1:2,:) = CI;
             plot(1:9,TM,'Linewidth',2,'Color',colorindex(cond,:)); hold on
             if nuclei == 13
                 fillhandle = patch([1:6 6:-1:1], [CI(1,1:6) fliplr(CI(2,1:6))], colorindex(cond,:));
@@ -1111,11 +1183,25 @@ for dataset=1:2
                 set(fillhandle,'EdgeColor',colorindex(cond,:),'FaceAlpha',0.2,'EdgeAlpha',0.8);%set edge color
             end
         end
-        if dataset == 1
-            title(sprintf('%s\n sample=%g voxels',labels{o(nuclei)},sample(o(nuclei))));
-        else
-            title(sprintf('%s\n sample=%g voxels',labels{o2(nuclei)},sample(o2(nuclei))));
+
+        % use tmp to assess CI overlap
+        pairs = nchoosek(1:4,2);
+        for p = size(pairs,1):-1:1
+            for test = 9:-1:1
+                A = linspace(tmp(pairs(p,1),1,test),tmp(pairs(p,1),2,test));
+                B = linspace(tmp(pairs(p,2),1,test),tmp(pairs(p,2),2,test));
+                out = intersect(round(A,1),round(B,1)); % round to 1st decimal place
+                if isempty(out)
+                    overlap(test) = 0;
+                else
+                    overlap(test) = 1;
+                end
+            end
+            meanoverlap(dataset,nuclei,p)=mean(overlap);
         end
+
+        % finish figure settings
+        title(sprintf('%s\n sample=%g voxels',labels{nuclei},sample(nuclei)));
         grid on; xticks(1:9); xticklabels({'.1','.2','.3','.4','.5','.6','.7','.8','.9'});
         if nuclei == 1 || nuclei == 5 || nuclei == 9 || nuclei == 13
             ylabel('Probability ratio');
@@ -1125,3 +1211,35 @@ for dataset=1:2
         end
     end
 end
+
+% report on overlap
+figure('Name','Sup Figure 15: Average overlap of CI in nuclei','NumberTitle','off'); 
+for nuclei=1:16
+    globaloverlap(1) = mean((meanoverlap(1,nuclei,1:3)+meanoverlap(2,nuclei,1:3))./2)*100;
+    fprintf('%s T1-1G overlapped %g,%%\n',labels{nuclei},globaloverlap(1))
+    globaloverlap(2) = mean((meanoverlap(1,nuclei,[1 4 5])+meanoverlap(2,nuclei,[1 4 5]))./2)*100;
+    fprintf('%s T1-2G overlapped %g,%%\n',labels{nuclei},globaloverlap(2))
+    globaloverlap(3) = mean((meanoverlap(1,nuclei,[2 4 6])+meanoverlap(2,nuclei,[2 4 6]))./2)*100;
+    fprintf('%s T2-1G overlapped %g,%%\n',labels{nuclei},globaloverlap(3))
+    globaloverlap(4) = mean((meanoverlap(1,nuclei,[3 5 6])+meanoverlap(2,nuclei,[3 5 6]))./2)*100;
+    fprintf('%s T2-2G overlapped %g,%%\n',labels{nuclei},globaloverlap(4))
+    subplot(4,4,nuclei); bar(globaloverlap); axis([0 5 0 100]); grid on
+    title(sprintf('%s',labels{nuclei})); ylabel('% overlap')
+    if nuclei >= 13
+        xticklabels({'T1-1G','T1-2G','T12-1G','T12-2G'});
+    end
+end
+
+% do some ranking -- edit figure 6A, 6B to order nuclei
+% based on GM prob.
+for nuclei=1:16
+    mean_GMpd(nuclei)  = nanmean(GMpd{nuclei}(:));
+    mean_WMpd(nuclei)  = nanmean(WMpd{nuclei}(:));
+    mean_CSFpd(nuclei) = nanmean(CSFpd{nuclei}(:));
+    mean_GMpv(nuclei)  = nanmean(GMpv{nuclei}(:));
+    mean_WMpv(nuclei)  = nanmean(WMpv{nuclei}(:));
+    mean_CSFpv(nuclei) = nanmean(CSFpv{nuclei}(:));
+end
+[v,o]  = sort(mean_GMpd,'descend');
+[v2,o2]= sort(mean_GMpv,'descend');
+[labels(o)' labels(o2)'];
